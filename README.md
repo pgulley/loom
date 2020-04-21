@@ -8,11 +8,19 @@ and allow users to see the status of other users in the space with them.
 
 ### How it works
 It's just a simple python server which recieves event singals from javascript which gets injected into the story. 
-The only modification needed is to add a tag: `{LOOM}` to the user javascript of a twine story. The story must use the Snowcone engine for this to work. 
+The only modification needed is to add a tag: `{LOOM}` to the user javascript of a twine story. The story must use the SugarCube engine for this to work. 
 
 
 ### Whats its for
+
 covid-inspired telepresence weirdness 
+
+### How to run
+
+create and enter a virtual environment
+`export FLASK_APP=loom.py`
+`flask run`
+
 
 ### Development Status
 
@@ -22,3 +30,10 @@ covid-inspired telepresence weirdness
 - [ ] SocketIO for beaming information back to client-side 
 - [ ] client-side UI for user presense
 - [ ] client-side admin ui 
+- [ ] flexible configuration and deployment options 
+
+#### Stretch Goals
+
+- [ ] Multi-Story Support
+- [ ] Web-Interface to load new stories
+- [ ] Extended API- ifttt? 

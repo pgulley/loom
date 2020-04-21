@@ -1,3 +1,6 @@
+//This code is injected into the twine story before it is sent to the browser.
+//Supports client identification and twine event interfacing.
+
 function makeid(length) {
    var result           = '';
    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

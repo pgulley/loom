@@ -3,6 +3,9 @@ from tinydb import TinyDB
 from event_db import event_db 
 import json
 import urlparse
+"""
+Main server file
+"""
 
 db = event_db(TinyDB("db/event_db.json"))
 app = Flask(__name__)
