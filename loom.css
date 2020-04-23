@@ -1,0 +1,26 @@
+div.loom_ui_main{
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	background: black;
+	border:solid grey 1px;
+	padding: 10px;
+}
+
+div.loom_client{
+	height:40px;
+	width:80px;
+	padding:10px;
+	display:inline-block;
+	background:grey;
+	border:2px solid grey;
+	margin-right:10px;
+}
+
+div.loom_client:last-child{
+	margin-right:0px;
+}
+
+div.loom_client.you{
+	border:2px solid green;
+}

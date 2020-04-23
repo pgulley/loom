@@ -15,15 +15,20 @@ class event_db():
         return self.events.all()
 
     def get_all_clients(self):
-        return [c["client_id"] for c in self.clients.all()]
+        return self.clients.all()
 
     def get_all_passages(self):
         return [p["passage_id"] for p in self.passages.all()]
 
+    def add_client(self, client_doc):
+        self.clients.insert(client_doc)
+
+    def get_client(self, client_id):
+        Client = Query()
+        return self.clients.search(Client.client_id==client_id)
+
     def insert(self, event):
-        if event["client_id"] not in self.get_all_clients():
-            self.clients.insert({"client_id":event["client_id"]})
-        if event["passage_id"] not in self.get_all_passages():
+        if event["passage_id"] not in self.get_all_passages(): ##hopefully this clause will depreciate too
             self.passages.insert({"passage_id":event["passage_id"]})
         self.events.insert(event)
 
@@ -35,8 +40,9 @@ class event_db():
         return max(self.get_all_client_events(client_id), key=lambda x: x["time"])
 
     def get_all_current_client_location_events(self):
-        return [self.get_current_client_location_event(client_id) for client_id in self.get_all_clients()]
+        all_current_events = [{"event": self.get_current_client_location_event(client["client_id"]), "client":client} 
+                                for client in self.get_all_clients()]
 
-    def get_current_passage_visitor_events(self, passage_id):
-        return filter(lambda x: (x["passage_id"] == passage_id), self.get_all_current_client_location_events())
-             
+        return filter(lambda x: (x["event"]["passage_id"] != "event:exit"), all_current_events) #never send exited clients
+
+    
