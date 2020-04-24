@@ -11,6 +11,7 @@ function makeid(length) {
 }
 
 var loom = {
+	story_id: document.URL.split("/").last(),
 	client_id : makeid(10),
 	current_passage : null,
 	clients_at_current_passage : []
@@ -20,31 +21,41 @@ var loom = {
 //Async Networking concerns
 var socket = io()
     socket.on('connect', function() {
-        socket.emit('connected', {"client_id":loom.client_id, time:Date.now(), "passage_id":"event:enter"});
+        socket.emit('connected', 
+        	{
+        		"story_id": loom.story_id,
+        		"passage_id":"event:enter",
+               	"client_id":loom.client_id, 
+        		"time":Date.now()
+        	})
     });
 
 socket.on("client_connect_ok", function(data){
 	console.log("connected: "+data["username"])
+	loom.clients_at_current_passage = [data]
+	render_loom_ui()
 })
+
 
 $(document).on(":passagestart",function(ev){
 	loom.current_passage = ev.content.id
 	var timestamp = Date.now()
 	var event_log = {
-		"time":timestamp, 
+		"story_id": loom.story_id, 
 		"passage_id":loom.current_passage,
-		"client_id":loom.client_id
+		"client_id":loom.client_id,
+		"time":Date.now()
 	}
 	socket.emit('nav_event',event_log)
 })
 
 //make sure an "exit" event is sent when client leaves or refreshes
 $(window).on("beforeunload",function() {
-	var timestamp = Date.now()
    	var event_log = {
-		"time":timestamp, 
+   		"story_id": loom.story_id,
 		"passage_id":"event:exit",
-		"client_id":loom.client_id
+		"client_id":loom.client_id,
+		"time":Date.now()
 	}
 	//frustratingly, we need to do this the socketless way. 
     navigator.sendBeacon("/log", JSON.stringify(event_log));
@@ -59,7 +70,7 @@ socket.on("clients_present", function(data){
  	render_loom_ui()
 })
 
-// UI Concerns
+///////////////////////////////// UI Concerns
 
 function render_loom_ui(){
 	var client_boxes = loom.clients_at_current_passage.map(function(client){
@@ -70,8 +81,7 @@ function render_loom_ui(){
 			return `<div class=loom_client > ${client.username} </div>`
 		}
 	})
-	var loom_ui = `<div class="loom_ui_main"> ${client_boxes.join('')} </div>`
-	console.log(loom_ui)
+	var loom_ui = `<div class="loom_ui_main"> ${client_boxes.join('')} </div>` 
 	$(".loom_ui_main").remove()
 	$("body").append(loom_ui)
 
