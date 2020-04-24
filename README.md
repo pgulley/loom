@@ -12,7 +12,7 @@ covid-inspired telepresence weirdness
 It' a simple python server which injects a socket.io client into a twine story. 
 The only requirement placed upon the twine story is that it is written in the SugarCube engine. 
 The only modification needed is to add a tag: `{LOOM_JS}` to the user javascript of a twine story and `{LOOM_CSS}` to the user stylesheet.
-Name the file 'twine.html' and plop that bad boy into the 'twines/' folder and you're golden. 
+Name the file anything unique and plop that bad boy into the 'twines/' folder and you're golden. 
 
 
 ### How to run
@@ -29,6 +29,7 @@ create and enter a virtual environment, install required packages.
 - [X] SocketIO for better client-server interaction
 - [X] better client profile system
 - [X] client-side UI for user presense
+- [X] Multi-Story Support
 - [ ] client-side admin ui 
 - [ ] flexible configuration and deployment options 
 - [ ] choose a better wsgi solution for non-dev deployments
@@ -37,6 +38,6 @@ create and enter a virtual environment, install required packages.
 #### Stretch Goals
 
 - [ ] Client-defined names and icons
-- [ ] Multi-Story Support
+
 - [ ] Web Interface to load new stories
 - [ ] Extended API- ifttt? 

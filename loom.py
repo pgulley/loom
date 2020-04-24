@@ -1,9 +1,10 @@
-from flask import Flask, escape, request
+from flask import Flask, request, render_template, render_template_string
 from flask_socketio import SocketIO, emit
 from tinydb import TinyDB
 from event_db import event_db 
 from random_username import get_random_username
 import json
+import os
 import urlparse
 """
 Main server file
@@ -19,8 +20,17 @@ socketio = SocketIO(app)
 ######################
 
 @app.route('/')
-def default():
-    with open("twines/twine.html", "r") as twine_file:
+def landing():
+    twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
+    with open("templates/landing.html") as landing_loc:
+        landing = landing_loc.read()
+
+    print(twines)
+    return render_template_string(landing, twines=twines)
+
+@app.route('/twine/<twine_name>')
+def serve_twine(twine_name):
+    with open("twines/{}.html".format(twine_name), "r") as twine_file:
         twine = twine_file.read()
 
     with open("loom.js", "r") as loom_js_file:
@@ -37,6 +47,11 @@ def default():
     loomed = loomed.replace("{LOOM_CSS}", loom_css)
     loomed = socket_inject+loomed
     return loomed
+
+@app.route('/admin')
+def admin():
+    return "ohoho it's an admin route. will get here eventually ;)"
+
 
 #######################
 # Async Functions     #
