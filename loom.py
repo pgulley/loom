@@ -27,8 +27,6 @@ def send_static(path):
     return send_from_directory("static",path)
 
 
-
-
 @app.route('/')
 def landing():
     with open("templates/landing.html") as landing_loc:
@@ -36,18 +34,19 @@ def landing():
     twines = [t["story_id"] for t in story_db_.get_all()]
     return render_template_string(landing, twines=twines)
 
+
 @app.route('/twine/<twine_name>')
 def serve_twine(twine_name):
     with open("twines/{}.html".format(twine_name), "r") as twine_file:
         twine = twine_file.read()
 
-    with open("loom.js", "r") as loom_js_file:
+    with open("static/loom.js", "r") as loom_js_file:
         loom_js = loom_js_file.read()
 
-    with open("loom.css") as css:
+    with open("static/loom.css") as css:
         loom_css = css.read()
 
-    with open("socketio.js", "r") as socket_io:
+    with open("static/socketio.js", "r") as socket_io:
         socket = socket_io.read()
         socket_inject = "<script type='text/javascript'>{}</script>".format(socket)
     
@@ -55,6 +54,7 @@ def serve_twine(twine_name):
     loomed = loomed.replace("{LOOM_CSS}", loom_css)
     loomed = socket_inject+loomed
     return loomed
+
 
 @app.route('/twine/<twine_name>/admin')
 def admin(twine_name):
@@ -78,19 +78,7 @@ def connect_socket(connect_event):
     if story_db_.get_story(story)["setup"] == True:
         emit("client_connect_ok", client_doc)
     else: 
-        emit("get_story_structure", story)
-
-@socketio.on("send_story_structure")
-def process_story_structure(structure):
-    print structure
-    #run once per story- populates the story's eventdb with story passages
-    #and updates the storydb entry to prevent this being re-run
-    story = structure["story"]
-    for passage in structure["passages"]:
-        event_dbs[story].add_passage({"passage_id":passage})
-    story_db_.mark_story_setup(story)
-
-
+        emit("load_story_structure", story)
 
 
 @socketio.on("nav_event")
@@ -103,6 +91,7 @@ def nav_event(nav_event):
     client_locations = event_dbs[story].get_all_current_client_location_events()
     emit("clients_present", client_locations, broadcast="true")
 
+
 @app.route("/log", methods=["POST"])
 def exit_event():
     request.get_data()
@@ -111,6 +100,22 @@ def exit_event():
     del log_data["story_id"]
     event_dbs[story].insert(log_data)
     return {"Status":"OK"}
+
+
+@socketio.on("process_story_structure")
+def process_story_structure(structure):
+    print structure
+    #run once per story- populates the story's eventdb with story passages
+    #and updates the storydb entry to prevent this being re-run
+    story = structure["story"]
+    for passage in structure["passages"]:
+        event_dbs[story].add_passage({"passage_id":passage})
+    story_db_.mark_story_setup(story)
+
+@socketio.on("get_story_structure")
+def get_story_structure(story_id):
+    passages = event_dbs[story_id].get_all_passages()
+    emit("story_structure", {"passages":passages})
 
 #######################
 
