@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, render_template_string
+from flask import Flask, request, render_template, render_template_string, send_from_directory
 from flask_socketio import SocketIO, emit
 from tinydb import TinyDB
 from event_db import event_db 
@@ -21,6 +21,13 @@ socketio = SocketIO(app)
 ######################
 # Main Server Functs #
 ######################
+
+@app.route('/static/<path>')
+def send_static(path):
+    return send_from_directory("static",path)
+
+
+
 
 @app.route('/')
 def landing():
@@ -50,8 +57,10 @@ def serve_twine(twine_name):
     return loomed
 
 @app.route('/twine/<twine_name>/admin')
-def admin():
-    return "ohoho it's an admin route for {}. will get here eventually ;)".format(twine_name)
+def admin(twine_name):
+    with open('templates/admin.html') as admin_loc:
+        admin = admin_loc.read()
+    return render_template_string(admin, twine_name=twine_name)
 
 
 #######################
