@@ -19,7 +19,8 @@ var loom = {
 
 
 //Async Networking concerns
-var socket = io()
+var socket = io(`/${loom.story_id}`)
+console.log(socket)
 socket.on('connect', function() {
     socket.emit('connected', 
     	{
@@ -43,6 +44,7 @@ socket.on("load_story_structure", function(data){
 
 
 $(document).on(":passagestart",function(ev){
+	console.log("look I'm here")
 	loom.current_passage = ev.content.id
 	var timestamp = Date.now()
 	var event_log = {
