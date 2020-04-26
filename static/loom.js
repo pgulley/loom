@@ -20,15 +20,15 @@ var loom = {
 
 //Async Networking concerns
 var socket = io()
-    socket.on('connect', function() {
-        socket.emit('connected', 
-        	{
-        		"story_id": loom.story_id,
-        		"passage_id":"event:enter",
-               	"client_id":loom.client_id, 
-        		"time":Date.now()
-        	})
-    });
+socket.on('connect', function() {
+    socket.emit('connected', 
+    	{
+    		"story_id": loom.story_id,
+    		"passage_id":"event:enter",
+           	"client_id":loom.client_id, 
+    		"time":Date.now()
+    	})
+});
 
 socket.on("client_connect_ok", function(data){
 	console.log("connected: "+data["username"])
@@ -36,9 +36,9 @@ socket.on("client_connect_ok", function(data){
 	render_loom_ui()
 })
 
-socket.on("get_story_structure", function(data){
+socket.on("load_story_structure", function(data){
 	var all_passages = SugarCube.Story.lookup().map(function(passage){return passage.domId})
-	socket.emit("send_story_structure", {"story":loom.story_id, "passages":all_passages})
+	socket.emit("process_story_structure", {"story":loom.story_id, "passages":all_passages})
 })
 
 
