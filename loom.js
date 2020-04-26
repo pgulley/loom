@@ -36,6 +36,11 @@ socket.on("client_connect_ok", function(data){
 	render_loom_ui()
 })
 
+socket.on("get_story_structure", function(data){
+	var all_passages = SugarCube.Story.lookup().map(function(passage){return passage.domId})
+	socket.emit("send_story_structure", {"story":loom.story_id, "passages":all_passages})
+})
+
 
 $(document).on(":passagestart",function(ev){
 	loom.current_passage = ev.content.id

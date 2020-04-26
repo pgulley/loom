@@ -49,9 +49,9 @@ def serve_twine(twine_name):
     loomed = socket_inject+loomed
     return loomed
 
-@app.route('/admin')
+@app.route('/twine/<twine_name>/admin')
 def admin():
-    return "ohoho it's an admin route. will get here eventually ;)"
+    return "ohoho it's an admin route for {}. will get here eventually ;)".format(twine_name)
 
 
 #######################
@@ -66,7 +66,23 @@ def connect_socket(connect_event):
     username = get_random_username()
     client_doc = {"client_id":connect_event["client_id"], "username":username}
     event_dbs[story].add_client(client_doc)
-    emit("client_connect_ok", client_doc)
+    if story_db_.get_story(story)["setup"] == True:
+        emit("client_connect_ok", client_doc)
+    else: 
+        emit("get_story_structure", story)
+
+@socketio.on("send_story_structure")
+def process_story_structure(structure):
+    print structure
+    #run once per story- populates the story's eventdb with story passages
+    #and updates the storydb entry to prevent this being re-run
+    story = structure["story"]
+    for passage in structure["passages"]:
+        event_dbs[story].add_passage({"passage_id":passage})
+    story_db_.mark_story_setup(story)
+
+
+
 
 @socketio.on("nav_event")
 def nav_event(nav_event):
@@ -95,7 +111,7 @@ def setup():
     for twine in twines:
         event_dbs[twine] = event_db(TinyDB("db/{}_event_db.json".format(twine)))
         if twine not in already_twines:
-            story_db_.insert({"story_id":twine})
+            story_db_.insert({"story_id":twine, "setup":False})
 
 if __name__ == '__main__':
     setup()

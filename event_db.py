@@ -1,7 +1,8 @@
 from tinydb import TinyDB, Query
 """
 Handles the database concerns: event-sourcing transformations and common queries. 
-
+A lot of these seem redundant rn, but I'm hoping to switch out to a better fit database eventually
+And building the db wrapper this way will reduce refactor complexity later on. 
 """
 
 class event_db():
@@ -18,18 +19,19 @@ class event_db():
         return self.clients.all()
 
     def get_all_passages(self):
-        return [p["passage_id"] for p in self.passages.all()]
+        return self.passages.all()
 
     def add_client(self, client_doc):
         self.clients.insert(client_doc)
+
+    def add_passage(self, passage_doc):
+        self.passages.insert(passage_doc)
 
     def get_client(self, client_id):
         Client = Query()
         return self.clients.search(Client.client_id==client_id)
 
     def insert(self, event):
-        if event["passage_id"] not in self.get_all_passages(): ##hopefully this clause will depreciate too
-            self.passages.insert({"passage_id":event["passage_id"]})
         self.events.insert(event)
 
     def get_all_client_events(self, client_id):
