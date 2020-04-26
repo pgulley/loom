@@ -103,19 +103,19 @@ def process_story_structure(structure):
     #and updates the storydb entry to prevent this being re-run
     story_id = structure["story"]
     for passage in structure["passages"]:
-        event_dbs[story_id].add_passage({"passage_id":passage})
+        event_dbs[story_id].add_passage(passage)
     story_db_.mark_story_setup(story_id)
 
 
 def get_story_structure(story_id):
     passages = event_dbs[story_id].get_all_passages()
-    emit("story_structure", {"passages":passages}, namespace="/{}".format(story_id))
+    print passages
+    emit("story_structure", passages, namespace="/{}".format(story_id))
 
 
 def get_client_locations(story_id):
     client_locations = event_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id) )
-
 
 
 all_socket_handlers = {

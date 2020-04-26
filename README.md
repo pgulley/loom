@@ -30,14 +30,18 @@ create and enter a virtual environment, install required packages.
 - [X] better client profile system
 - [X] client-side UI for user presense
 - [X] Multi-Story Support
-- [ ] client-side admin ui 
+- [X] client-side admin ui 
+- [ ] store story graph stucture
+- [ ] lodashify client code
 - [ ] flexible configuration and deployment options 
 - [ ] choose a better wsgi solution for non-dev deployments
 - [ ] ui polish pls and thx
 
+
 #### Stretch Goals
 
 - [ ] Client-defined names and icons
-
+- [ ] More Sugarcube Engine interactions (variables etc)
 - [ ] Web Interface to load new stories
+- [ ] Redo server in node+mongo
 - [ ] Extended API- ifttt? 

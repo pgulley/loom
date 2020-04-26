@@ -1,0 +1,10 @@
+
+
+.twine_table tr{
+	border-bottom:2px solid black;
+}
+
+.twine_table td{
+	border-right:2px solid grey;
+	margin-right:3px;
+}

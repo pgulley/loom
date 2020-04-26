@@ -38,7 +38,12 @@ socket.on("client_connect_ok", function(data){
 })
 
 socket.on("load_story_structure", function(data){
-	var all_passages = SugarCube.Story.lookup().map(function(passage){return passage.domId})
+	var all_passages = SugarCube.Story.lookup().map(function(passage){
+		return {
+			"passage_id":passage.domId,
+			"title":passage.title,
+		}
+	})
 	socket.emit("process_story_structure", {"story":loom.story_id, "passages":all_passages})
 })
 
