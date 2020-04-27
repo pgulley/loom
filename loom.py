@@ -35,7 +35,7 @@ def landing():
     twines = [t["story_id"] for t in story_db_.get_all()]
     return render_template_string(landing, twines=twines)
 
-
+#This is both the fulcrum of the whole deal and also the most fragile piece of this whole arrangement. 
 @app.route('/twine/<twine_name>')
 def serve_twine(twine_name):
     with open("twines/{}.html".format(twine_name), "r") as twine_file:
@@ -50,10 +50,15 @@ def serve_twine(twine_name):
     with open("static/socketio.js", "r") as socket_io:
         socket = socket_io.read()
         socket_inject = "<script type='text/javascript'>{}</script>".format(socket)
+
+    with open("static/lodash.js", "r") as lodash_loc:
+        lodash = lodash_loc.read()
+        lodash_inject = "<script type='text/javascript'>{}</script>".format(lodash)
     
     loomed = twine.replace("{LOOM_JS}", loom_js)
     loomed = loomed.replace("{LOOM_CSS}", loom_css)
     loomed = socket_inject+loomed
+    loomed = lodash_inject+loomed
     return loomed
 
 @app.route("/log", methods=["POST"])
