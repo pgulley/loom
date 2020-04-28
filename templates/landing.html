@@ -1,16 +1,20 @@
 <html>
 <head>
 <title> Loom </title>
+<link rel='shortcut icon' type='image/x-icon' href='/static/favicon.ico' />
+<link rel="stylesheet" type="text/css" href="/static/landing.css"> </style>
 </head>
 <body>
+	<h1> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div></h1>
+	<div class="twine list">
+		{% for twine in twines %}
 
-<ol>
-{% for twine in twines %}
+		<div class="twine_entry"> 
+			<a href="/twine/{{ twine }}"> {{ twine }} </a> | <a class="admin_link" href="/twine/{{ twine }}/admin"> admin </a>
+		</div>
 
-<li> <a href="/twine/{{ twine }}"> {{ twine }} </a> </li>
-
-{% endfor %}
-</ol>
+		{% endfor %}
+	</div>
 </body>
 
 </html>

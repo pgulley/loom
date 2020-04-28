@@ -1,0 +1,27 @@
+h1{
+	border-bottom:2px solid black;
+}
+
+img.logo{
+	height:40px
+}
+
+.brand_header{
+	display:inline-block;
+	position:relative;
+	font-size:30px;
+	bottom:7px;
+}
+
+.twine_entry{
+	margin-left: 10px;
+	margin-bottom:10px;
+	font-size: 20px;
+	border: 2px solid black;
+	width: 40%;
+	padding-left: 10px;
+}
+
+a.admin_link{
+	margin-right:10px;
+}

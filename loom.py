@@ -135,7 +135,7 @@ all_socket_handlers = {
 
 def setup():
     twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
-    already_twines = story_db_.get_all()
+    already_twines = [story['story_id'] for story in story_db_.get_all()]
     for story_id in twines:
         event_dbs[story_id] = event_db(TinyDB("db/{}_event_db.json".format(story_id)))
         for name, function in all_socket_handlers.iteritems():

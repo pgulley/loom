@@ -20,7 +20,6 @@ var loom = {
 
 //Async Networking concerns
 var socket = io(`/${loom.story_id}`)
-console.log(socket)
 socket.on('connect', function() {
     socket.emit('connected', 
     	{
@@ -40,7 +39,6 @@ socket.on("client_connect_ok", function(data){
 socket.on("load_story_structure", function(data){
 	//called only once per story per deployment
 	//does some parsing to grab the links between stories
-	console.log(_)
 	var all_passages = SugarCube.Story.lookup()
 	
 	var title_id_map = all_passages.map(function(p){
@@ -54,11 +52,15 @@ socket.on("load_story_structure", function(data){
 		var link_regex = /\[\[([^\[]+)\]\]/g
 		var links = passage_text.match(link_regex)
 		var processed_links = links.map(function(link){
+			//support all the valid syntaxes for link declaration
 			if(link.includes("->")){
 				var link_title = link.replace("[[", "").replace("]]","").split("->")[1]
+			}else if(link.includes("|")){
+				var link_title = link.replace("[[", "").replace("]]","").split("|")[1]
 			}else{
 				var link_title = link.replace("[[", "").replace("]]","")
 			}
+			//map link 'title' to link id
 			return title_id_map.filter(function(map){
 				return map["title"]==link_title
 			})[0]["id"]
