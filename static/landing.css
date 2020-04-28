@@ -6,6 +6,14 @@ img.logo{
 	height:40px
 }
 
+a.head_link{
+	color:black;
+}
+
+a.head_link :clicked{
+	color:black;
+}
+
 .brand_header{
 	display:inline-block;
 	position:relative;
@@ -22,6 +30,18 @@ img.logo{
 	padding-left: 10px;
 }
 
-a.admin_link{
-	margin-right:10px;
+h3{
+	margin-top:5px;
+}
+
+.twine_entry a{
+	color:black;
+}
+
+.twine_entry a :hover{
+	color:grey;
+}
+
+.twine_entry a :clicked{
+	color:black;
 }

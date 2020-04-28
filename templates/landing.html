@@ -5,12 +5,14 @@
 <link rel="stylesheet" type="text/css" href="/static/landing.css"> </style>
 </head>
 <body>
-	<h1> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div></h1>
+	<h1> <a class="head_link" href="/"> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div> </a> </h1>
 	<div class="twine list">
 		{% for twine in twines %}
 
 		<div class="twine_entry"> 
-			<a href="/twine/{{ twine.story_id }}">{{ twine.title }}</a> | <a class="admin_link" href="/twine/{{ twine.story_id }}/admin"> admin </a>
+			<h3>{{ twine.title }}</h3>
+			<a href="/twine/{{ twine.story_id }}"> play story </a> </br>
+			<a class="admin_link" href="/twine/{{ twine.story_id }}/admin"> admin view </a>
 		</div>
 
 		{% endfor %}
