@@ -34,6 +34,7 @@ create and enter a virtual environment, install required packages.
 - [X] store story graph stucture
 - [X] Load story structure on server-side
 - [ ] lodashify client code
+- [ ] client-side persistance
 - [ ] flexible configuration and deployment options 
 - [ ] choose a better wsgi solution for non-dev deployments
 - [ ] ui polish pls and thx
@@ -46,3 +47,8 @@ create and enter a virtual environment, install required packages.
 - [ ] Web Interface to load new stories
 - [ ] Redo server in node+mongo
 - [ ] Extended API- ifttt? 
+
+#### Bugs
+
+- Clients don't reset correctly on server reset
+- Database can get corrupted sometimes

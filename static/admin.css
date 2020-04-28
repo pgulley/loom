@@ -2,6 +2,14 @@ h1{
 	border-bottom:2px solid black;
 }
 
+a.head_link{
+	color:black;
+}
+
+a.head_link :clicked{
+	color:black;
+}
+
 h2{
 	font-size: 20px;
     padding-left: 10px;
@@ -32,4 +40,41 @@ img.logo{
 .twine_table td{
 	border-right:2px solid grey;
 	margin-right:3px;
+}
+
+.passages_table{
+	border-bottom:1px solid black;
+}
+
+.passages_graph_header{
+	margin-top:10px;
+	font-weight:bold;
+}
+
+.passages_graph_body{
+	position:relative;
+	top:-50;
+}
+
+.graph_link{
+	z-index:-50;
+	border:solid 2px black;
+	border-radius:20px;
+
+}
+
+.passage_node{
+	position:absolute;
+	border:2px solid black;
+	height:60px;
+	width:min-content;
+	padding:5px;
+	display:inline-block;
+	z-index:50;
+	background:white;
+}
+
+.footer{
+	height:20px;
+	border-top:2px solid black;
 }

@@ -6,7 +6,8 @@ var loom_admin = {
 	story_id:document.URL.split("/")[4],
 	passages:null,
 	client_states:null,
-	clients_sorted:null
+	clients_sorted:null,
+	graph_x_pos: []
 }
 
 function setup_table(){
@@ -18,7 +19,7 @@ function setup_table(){
 		</tr>`
 	})
 
-	$(".passages").append( 
+	$(".passages_table").append( 
 		`<table class="twine_table">
 			<tr>
 				<th> Passage Title </th>
@@ -34,12 +35,8 @@ function update_table(){
 	console.log("Updating Table")
 	loom_admin.passages.map(function(passage){
 		passage_info = loom_admin.clients_sorted.filter(function(item){return item.id == passage.passage_id})[0]
-		console.log(passage_info)
-
 		var num_query = `#${ passage.passage_id } .num_connected`
 		var clients_query = `#${ passage.passage_id } .client_names`
-		console.log(num_query)
-		console.log(clients_query)
 		if(passage_info.clients.length > 0){
 			var clients = passage_info.clients.map(function(c){return c.client.username})
 			$(num_query)[0].innerHTML = passage_info.clients.length
@@ -54,6 +51,28 @@ function update_table(){
 }
 
 
+function get_passage_graph_node(passage){
+	console.log(passage)
+	var position = passage.position.split(",")
+	loom_admin.graph_x_pos.push(position[1])
+	return `<div class="passage_node" id="node-${passage.passage_id}" style="left:${position[0]}; top:${position[1]}"> ${passage.title} </div>`
+}
+
+function setup_graph(){
+	var nodes = loom_admin.passages.map(function(p){return get_passage_graph_node(p)})
+	$(".passages_graph_body")[0].innerHTML = nodes.join("")
+	loom_admin.passages.map(function(p){
+		p.link_ids.map(function(i){
+			$(`#node-${p.passage_id}`).connections({to:`#node-${i}`, class:"graph_link"})
+		})
+	})
+	var xmin = Math.min.apply(null, loom_admin.graph_x_pos)
+	var xmax = Math.max.apply(null, loom_admin.graph_x_pos)
+	var xspan = xmax-xmin
+	$(".passages_graph_body").height(xspan+200) 
+}
+
+
 var socket = io(`/${loom_admin.story_id}`)
 socket.on('connect', function() {
 	socket.emit("get_story_structure", loom_admin.story_id)
@@ -63,6 +82,7 @@ socket.on('connect', function() {
 socket.on("story_structure", function(structure){
 	loom_admin.passages = structure
 	setup_table()
+	setup_graph()
 })
 
 socket.on("clients_present", function(clients){

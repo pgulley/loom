@@ -3,17 +3,19 @@
 <script type="text/javascript" src="/static/jquery.min.js"></script>
 <script type="text/javascript" src="/static/socketio.js"></script>
 <script type="text/javascript" src="/static/lodash.js"></script>
+<script type="text/javascript" src="/static/jquery.connections.js"></script>
 <script type="text/javascript" src="/static/admin.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/admin.css"> </style>
 <link rel='shortcut icon' type='image/x-icon' href='/static/favicon.ico' />
 <title> {{ twine.title }} | admin </title>
 </head>
 <body>
-	<h1> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div></h1>
+	<h1> <a class="head_link" href="/"> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div> </a> </h1>
 	<h2> Admin for <div class="story_title"> {{ twine.title }} </div> </h2>
-	<div class="passages">
-
-	</div>
+	<div class="passages_table"> </div>
+	<div class="passages_graph_header"> Story Graph </div>
+	<div class="passages_graph_body"> </div>
+	<div class="footer"> </div>
 </body>
 
 </html>
