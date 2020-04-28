@@ -52,10 +52,9 @@ function update_table(){
 
 
 function get_passage_graph_node(passage){
-	console.log(passage)
 	var position = passage.position.split(",")
 	loom_admin.graph_x_pos.push(position[1])
-	return `<div class="passage_node" id="node-${passage.passage_id}" style="left:${position[0]}; top:${position[1]}"> ${passage.title} </div>`
+	return `<div class="passage_node" id="node-${passage.passage_id}" style="left:${position[0]}; top:${position[1]}"> <div class="node_badge"></div> ${passage.title} </div>`
 }
 
 function setup_graph(){
@@ -72,6 +71,18 @@ function setup_graph(){
 	$(".passages_graph_body").height(xspan+200) 
 }
 
+function update_graph(){
+	loom_admin.passages.map(function(p){
+		passage_info = loom_admin.clients_sorted.filter(function(item){return item.id == p.passage_id})[0]
+		num_connected = passage_info.clients.length
+		if(num_connected > 0){
+			$(`#node-${p.passage_id} .node_badge`).css("display", "inline-block")
+			$(`#node-${p.passage_id} .node_badge`)[0].innerHTML = num_connected
+		}else{
+			$(`#node-${p.passage_id} .node_badge`).css("display", "none")
+		}
+	})
+}
 
 var socket = io(`/${loom_admin.story_id}`)
 socket.on('connect', function() {
@@ -92,8 +103,8 @@ socket.on("clients_present", function(clients){
 		passage_clients = loom_admin.client_states.filter(function(client){return client.event.passage_id==passage.passage_id})
 		return {id:passage_id, clients:passage_clients}
 	})
-	console.log(loom_admin)
 	update_table()
+	update_graph()
 })
 
 

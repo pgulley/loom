@@ -46,8 +46,9 @@ img.logo{
 	border-bottom:1px solid black;
 }
 
-.passages_graph_header{
+.passages_header{
 	margin-top:10px;
+	padding-left:10px;
 	font-weight:bold;
 }
 
@@ -72,6 +73,21 @@ img.logo{
 	display:inline-block;
 	z-index:50;
 	background:white;
+}
+
+.node_badge{
+	border: solid 1px black;
+	height: 20px;
+	width: 20px;
+	border-radius: 15px;
+	position: absolute;
+	padding-top:5px;
+	top: -15;
+	left: -15;
+	background: white;
+	display: inline-block;
+	font-size: 15;
+	text-align: center;
 }
 
 .footer{
