@@ -10,7 +10,7 @@
 		{% for twine in twines %}
 
 		<div class="twine_entry"> 
-			<a href="/twine/{{ twine }}"> {{ twine }} </a> | <a class="admin_link" href="/twine/{{ twine }}/admin"> admin </a>
+			<a href="/twine/{{ twine.story_id }}">{{ twine.title }}</a> | <a class="admin_link" href="/twine/{{ twine.story_id }}/admin"> admin </a>
 		</div>
 
 		{% endfor %}

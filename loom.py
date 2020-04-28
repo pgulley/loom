@@ -5,6 +5,7 @@ from tinydb import TinyDB
 from event_db import event_db 
 from story_db import story_db
 from random_username import get_random_username
+import process_twine
 import time
 import json
 import os
@@ -32,8 +33,7 @@ def send_static(path):
 def landing():
     with open("templates/landing.html") as landing_loc:
         landing = landing_loc.read()
-    twines = [t["story_id"] for t in story_db_.get_all()]
-    return render_template_string(landing, twines=twines)
+    return render_template_string(landing, twines=story_db_.get_all())
 
 #This is both the fulcrum of the whole deal and also the most fragile piece of this whole arrangement. 
 @app.route('/twine/<twine_name>')
@@ -70,11 +70,12 @@ def exit_event():
     event_dbs[story].insert(log_data)
     return {"Status":"OK"}
 
-@app.route('/twine/<twine_name>/admin')
-def admin(twine_name):
+@app.route('/twine/<twine_id>/admin')
+def admin(twine_id):
     with open('templates/admin.html') as admin_loc:
         admin = admin_loc.read()
-    return render_template_string(admin, twine_name=twine_name)
+    twine = story_db_.get_story(twine_id)
+    return render_template_string(admin, twine=twine)
 
 
 #######################
@@ -87,11 +88,7 @@ def connect_socket(connect_event):
     username = get_random_username()
     client_doc = {"client_id":connect_event["client_id"], "username":username}
     event_dbs[story_id].add_client(client_doc)
-    if story_db_.get_story(story_id)["setup"] == True:
-        emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
-    else: 
-        emit("load_story_structure", story_id, namespace="/{}".format(story_id))
-
+    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
 def nav_event(nav_event):
     print("NAV EVENT: ",nav_event)
@@ -102,19 +99,8 @@ def nav_event(nav_event):
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 
-def process_story_structure(structure):
-    print structure
-    #run once per story- populates the story's eventdb with story passages
-    #and updates the storydb entry to prevent this being re-run
-    story_id = structure["story"]
-    for passage in structure["passages"]:
-        event_dbs[story_id].add_passage(passage)
-    story_db_.mark_story_setup(story_id)
-
-
 def get_story_structure(story_id):
     passages = event_dbs[story_id].get_all_passages()
-    print passages
     emit("story_structure", passages, namespace="/{}".format(story_id))
 
 
@@ -126,7 +112,6 @@ def get_client_locations(story_id):
 all_socket_handlers = {
     "connected": connect_socket,
     "nav_event": nav_event,
-    "process_story_structure": process_story_structure,
     "get_story_structure": get_story_structure,
     "get_client_locations": get_client_locations
 }
@@ -137,11 +122,19 @@ def setup():
     twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
     already_twines = [story['story_id'] for story in story_db_.get_all()]
     for story_id in twines:
+        
         event_dbs[story_id] = event_db(TinyDB("db/{}_event_db.json".format(story_id)))
         for name, function in all_socket_handlers.iteritems():
             socketio.on_event(name, function, namespace="/{}".format(story_id))
+
+        #this setup should only happen once per twine per database instantiation 
         if story_id not in already_twines:
-            story_db_.insert({"story_id":story_id, "setup":False})
+            twine_structure = process_twine.process("twines/{}.html", story_id)
+            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"]}
+            story_db_.insert(story_doc)
+            for passage in twine_structure["passages"]:
+                event_dbs[story_id].add_passage(passage)
+
 
 if __name__ == '__main__':
     setup()

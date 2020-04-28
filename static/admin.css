@@ -20,6 +20,11 @@ img.logo{
 	bottom:7px;
 }
 
+.story_title{
+	display:inline-block;
+	font-style:italic;
+}
+
 .twine_table tr{
 	border-bottom:2px solid black;
 }

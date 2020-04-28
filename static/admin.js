@@ -41,7 +41,6 @@ function update_table(){
 		console.log(num_query)
 		console.log(clients_query)
 		if(passage_info.clients.length > 0){
-			console.log(passage_info)
 			var clients = passage_info.clients.map(function(c){return c.client.username})
 			$(num_query)[0].innerHTML = passage_info.clients.length
 			$(clients_query)[0].innerHTML = clients

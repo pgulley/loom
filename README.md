@@ -31,7 +31,8 @@ create and enter a virtual environment, install required packages.
 - [X] client-side UI for user presense
 - [X] Multi-Story Support
 - [X] client-side admin ui 
-- [ ] store story graph stucture
+- [X] store story graph stucture
+- [X] Load story structure on server-side
 - [ ] lodashify client code
 - [ ] flexible configuration and deployment options 
 - [ ] choose a better wsgi solution for non-dev deployments
