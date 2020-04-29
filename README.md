@@ -17,8 +17,12 @@ Name the file anything unique and plop that bad boy into the 'twines/' folder an
 
 ### How to run
 
-create and enter a virtual environment, install required packages. 
-`python loom.py`
+Right now there is only a development server- it's packaged as a default python package, so 
+slap this thing in a virtual environment and run `python loom.py` and you're golden. 
+
+As of recently, we're using mongodb for database stuff. 
+I may switch this over eventually for easier deployments by hobbyists, but for now it solves a lot of concurrency issues to use mongo.
+All this to say, make sure you have a mongodb instance running or it won't work. 
 
 
 ### Development Status
@@ -33,8 +37,8 @@ create and enter a virtual environment, install required packages.
 - [X] client-side admin ui 
 - [X] store story graph stucture
 - [X] Load story structure on server-side
-- [ ] lodashify client code
-- [ ] client-side persistance
+- [ ] fix client-side persistance bug
+- [ ] Client-defined names and icons
 - [ ] flexible configuration and deployment options 
 - [ ] choose a better wsgi solution for non-dev deployments
 - [ ] ui polish pls and thx
@@ -42,13 +46,12 @@ create and enter a virtual environment, install required packages.
 
 #### Stretch Goals
 
-- [ ] Client-defined names and icons
 - [ ] More Sugarcube Engine interactions (variables etc)
 - [ ] Web Interface to load new stories
-- [ ] Redo server in node+mongo
+- [ ] Redo server in node for better async support
 - [ ] Extended API- ifttt? 
 
 #### Bugs
 
-- Clients don't reset correctly on server reset
-- Database can get corrupted sometimes
+- [ ] Clients don't reset correctly on server reset
+- [X] Database can get corrupted sometimes - Dealt with by switching to mongodb

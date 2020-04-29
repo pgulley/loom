@@ -1,6 +1,7 @@
-
 from flask import Flask, request, render_template, render_template_string, send_from_directory
 from flask_socketio import SocketIO, emit
+from pymongo import MongoClient
+from event_mongodb import RootCollection, StoryCollection
 from tinydb import TinyDB
 from event_db import event_db 
 from story_db import story_db
@@ -20,6 +21,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'not_on_github_no_you_dont'
 socketio = SocketIO(app)
 
+client = MongoClient(port=27017) 
+root_db = RootCollection(client.root)
+story_dbs = {}
+
 ######################
 # main server functs #
 ######################
@@ -33,7 +38,7 @@ def send_static(path):
 def landing():
     with open("templates/landing.html") as landing_loc:
         landing = landing_loc.read()
-    return render_template_string(landing, twines=story_db_.get_all())
+    return render_template_string(landing, twines=root_db.get_all())
 
 #This is both the fulcrum of the whole deal and also the most fragile piece of this whole arrangement. 
 @app.route('/twine/<twine_name>')
@@ -67,14 +72,14 @@ def exit_event():
     log_data = json.loads(request.data)
     story = log_data["story_id"]
     del log_data["story_id"]
-    event_dbs[story].insert(log_data)
+    story_dbs[story].add_event(log_data)
     return {"Status":"OK"}
 
 @app.route('/twine/<twine_id>/admin')
 def admin(twine_id):
     with open('templates/admin.html') as admin_loc:
         admin = admin_loc.read()
-    twine = story_db_.get_story(twine_id)
+    twine = root_db.get_story(twine_id)
     return render_template_string(admin, twine=twine)
 
 
@@ -82,30 +87,30 @@ def admin(twine_id):
 # socket functions    #
 #######################
 def connect_socket(connect_event):
-    print(connect_event)
     story_id = connect_event["story_id"]
     del connect_event["story_id"]
     username = get_random_username()
     client_doc = {"client_id":connect_event["client_id"], "username":username}
-    event_dbs[story_id].add_client(client_doc)
+    story_dbs[story_id].add_client(client_doc)
+    del client_doc["_id"]
     emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
 def nav_event(nav_event):
     print("NAV EVENT: ",nav_event)
     story_id = nav_event["story_id"]
     del nav_event["story_id"]
-    event_dbs[story_id].insert(nav_event)
-    client_locations = event_dbs[story_id].get_all_current_client_location_events()
+    story_dbs[story_id].add_event(nav_event)
+    client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 
 def get_story_structure(story_id):
-    passages = event_dbs[story_id].get_all_passages()
+    passages = story_dbs[story_id].get_all_passages()
     emit("story_structure", passages, namespace="/{}".format(story_id))
 
 
 def get_client_locations(story_id):
-    client_locations = event_dbs[story_id].get_all_current_client_location_events()
+    client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id) )
 
 
@@ -120,10 +125,11 @@ all_socket_handlers = {
 
 def setup():
     twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
-    already_twines = [story['story_id'] for story in story_db_.get_all()]
+    already_twines = [story['story_id'] for story in root_db.get_all()]
     for story_id in twines:
-        
-        event_dbs[story_id] = event_db(TinyDB("db/{}_event_db.json".format(story_id)))
+        #event_dbs[story_id] = event_db(TinyDB("db/{}_event_db.json".format(story_id)))
+        story_dbs[story_id] = StoryCollection(client[story_id])
+
         for name, function in all_socket_handlers.iteritems():
             socketio.on_event(name, function, namespace="/{}".format(story_id))
 
@@ -131,9 +137,9 @@ def setup():
         if story_id not in already_twines:
             twine_structure = process_twine.process("twines/{}.html", story_id)
             story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"]}
-            story_db_.insert(story_doc)
+            root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
-                event_dbs[story_id].add_passage(passage)
+                story_dbs[story_id].add_passage(passage)
 
 
 if __name__ == '__main__':

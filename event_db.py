@@ -6,8 +6,8 @@ And building the db wrapper this way will reduce refactor complexity later on.
 """
 
 class event_db():
-    def __init__(self, db):
-        self.db = db
+    def __init__(self, collection):
+        self.db = collection
         self.events = db.table("events")
         self.clients = db.table("clients")
         self.passages = db.table("passages")
