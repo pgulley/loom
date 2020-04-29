@@ -2,19 +2,22 @@ div.loom_ui_main{
 	position: absolute;
 	bottom: 10px;
 	right: 10px;
-	background: black;
-	border:solid grey 1px;
+	background: transparent;
 	padding: 10px;
 }
 
 div.loom_client{
-	height:40px;
-	width:80px;
+	height:30px;
+	width:30px;
+	line-height:30px;
+	font-size:17px;
 	padding:10px;
 	display:inline-block;
 	background:grey;
 	border:2px solid grey;
 	margin-right:10px;
+	border-radius:60px;
+	position:relative;
 }
 
 div.loom_client:last-child{
@@ -22,5 +25,19 @@ div.loom_client:last-child{
 }
 
 div.loom_client.you{
-	border:2px solid green;
+	border:5px solid white;
+	float:right;
+}
+
+div.loom_client_detail{
+	background:black;
+	display:none; 
+	border-radius:10px;
+	width:120px;
+	height:60px;
+	position:absolute;
+	top:-80px;
+	left:-85;
+	padding-left:10px;
+	border:2px solid white;
 }

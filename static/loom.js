@@ -75,15 +75,21 @@ socket.on("clients_present", function(data){
 
 function render_loom_ui(){
 	var client_boxes = loom.clients_at_current_passage.map(function(client){
+		var shortuname = client.username.split(" ").map(function(i){return i[0]}).join(" ").toUpperCase()
 		if(client.client_id == loom.client_id){
-			return `<div class="loom_client you"> ${client.username} </div>`
+			return `<div class="loom_client you"> ${shortuname} <div class='loom_client_detail'> ${client.username} </div> </div>`
 		}
 		else{
-			return `<div class=loom_client > ${client.username} </div>`
+			return `<div class=loom_client > ${shortuname} <div class='loom_client_detail'> ${client.username} </div> </div>`
 		}
 	})
-	var loom_ui = `<div class="loom_ui_main"> ${client_boxes.join('')} </div>` 
+	var loom_ui = `<div class="loom_ui_main"> ${client_boxes.join('')} <div class='loom_client_detail'>  </div> </div>` 
 	$(".loom_ui_main").remove()
 	$("body").append(loom_ui)
-
 }
+
+$(document).on("click", ".loom_client", function(){
+	console.log(this)
+	var detail = $(this).children()
+	detail.toggle()
+})
