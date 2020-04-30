@@ -27,6 +27,8 @@ All this to say, make sure you have a mongodb instance running or it won't work.
 
 ### Development Status
 
+#### MVP checklist
+
 - [X] Javascript Injection and Twine Event Binding
 - [X] Server-side event-sourced database
 - [X] Simple AJAX bodge for client-server interaction 
@@ -37,21 +39,20 @@ All this to say, make sure you have a mongodb instance running or it won't work.
 - [X] client-side admin ui 
 - [X] store story graph stucture
 - [X] Load story structure on server-side
-- [X] fix client-side persistance bug
-- [ ] Client-defined names and icons
+- [X] Client-defined names and icons
 - [ ] flexible configuration and deployment options 
 - [ ] choose a better wsgi solution for non-dev deployments
 - [ ] ui polish pls and thx
 
+#### Down the road options
 
-#### Stretch Goals
-
-- [ ] More Sugarcube Engine interactions (variables etc)
+- [ ] Authentication / User Sessions 
 - [ ] Web Interface to load new stories
-- [ ] Redo server in node for better async support
+- [ ] Client to client chatting
+- [ ] More Admin interaction options
+- [ ] More Sugarcube Engine interactions (variables etc)
 - [ ] Extended API- ifttt? 
 
 #### Bugs
 
-- [ ] Clients don't reset correctly on server reset
-- [X] Database can get corrupted sometimes - Dealt with by switching to mongodb
+None (that I know of) right now
