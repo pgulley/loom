@@ -123,6 +123,9 @@ def update_client(client_update_doc):
     client_doc = client_update_doc["client"]
     story_dbs[story_id].update_client(client_doc)
     emit("did_client_update", client_doc)
+    
+    client_locations = story_dbs[story_id].get_all_current_client_location_events()
+    emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 all_socket_handlers = {
     "connected": connect_socket,

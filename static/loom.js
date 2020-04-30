@@ -10,6 +10,9 @@ function makeid(length) {
    return result;
 }
 
+function get_shortname(uname){
+	return uname.split(" ").map(function(i){return i[0]}).slice(0,2).join(" ").toUpperCase()
+}
 
 var loom = {
 	story_id: document.URL.split("/").last(),
@@ -70,22 +73,22 @@ socket.on("clients_present", function(data){
  	}).map(function(event){
  		return event["client"]
  	})
- 	console.log("present event")
  	update_other_clients()
 })
 
 socket.on("did_client_update", function(data){
-	console.log(data)
+	console.log("got did_client_update")
+	loom.client_obj = data
+	update_current_client()
 })
 
 ///////////////////////////////// UI Concerns
 
 function get_current_client_ui(){
-	var shortname = loom.client_obj.username.split(" ").map(function(i){return i[0]}).join(" ").toUpperCase()
-	return `<div class="loom_client you"> 
-				${shortname} 
+	return `<div class="loom_client"> 
+				<span id="client_shortname"> ${get_shortname(loom.client_obj.username)} </span>
 				<div class='loom_client_detail'> 
-					${loom.client_obj.username}  </br>
+					<span id="client_uname">${loom.client_obj.username}</span>  </br>
 					<div class="edit_client_button show">edit</div>
 					<div class="edit_client_interface hide">
 						<div class="hide_edit_interface"> X </div>
@@ -96,12 +99,17 @@ function get_current_client_ui(){
 			</div>`
 }
 
+function update_current_client(){
+	console.log("is this working?")
+	console.log(loom.client_obj)
+	$("#client_shortname")[0].innerHTML = get_shortname(loom.client_obj.username)
+	$("#client_uname")[0].innerHTML = loom.client_obj.username
+}
+
 //update other clients
 function update_other_clients(){
 	var client_boxes = loom.clients_at_current_passage.map(function(client){
-		console.log(client)
-		var shortuname = client.username.split(" ").map(function(i){return i[0]}).join(" ").toUpperCase()
-		return `<div class=loom_client > ${shortuname} <div class='loom_client_detail'> ${client.username} </div> </div>`
+		return `<div class=loom_client > ${get_shortname(client.username)} <div class='loom_client_detail'> ${client.username} </div> </div>`
 	})
 	console.log(client_boxes)
 	$(".other_clients")[0].innerHTML = client_boxes.join("")
@@ -147,7 +155,6 @@ $(document).on("keypress", "#uname", function(e){
 	if(e.which==13){
 		if(loom.client_obj.username!=this.value){
 			loom.client_obj.username = this.value
-			console.log(loom.client_obj)
 			socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})
 		}
 	}
