@@ -1,4 +1,4 @@
-div.loom_ui_main{
+.loom_ui_main{
 	position: absolute;
 	bottom: 10px;
 	right: 10px;
@@ -6,7 +6,7 @@ div.loom_ui_main{
 	padding: 10px;
 }
 
-div.loom_client{
+.loom_client{
 	height:30px;
 	width:30px;
 	line-height:30px;
@@ -20,16 +20,16 @@ div.loom_client{
 	position:relative;
 }
 
-div.loom_client:last-child{
+.loom_client:last-child{
 	margin-right:0px;
 }
 
-div.loom_client.you{
+.loom_client.you{
 	border:5px solid white;
 	float:right;
 }
 
-div.loom_client_detail{
+.loom_client_detail{
 	background:black;
 	display:none; 
 	border-radius:10px;
@@ -40,4 +40,36 @@ div.loom_client_detail{
 	left:-85;
 	padding-left:10px;
 	border:2px solid white;
+}
+
+.you.loom_client_detail{
+	height:100px;
+}
+
+.loom_client_detail.large{
+	width:400px;
+	height:200px;
+	top:-220px;
+	left:-365px;
+}
+
+.edit_client_button.show{
+	display:inline;
+}
+
+.edit_client_button.hide{
+	display:none;
+}
+
+.edit_client_interface.hide{
+	display:none;
+}
+
+.edit_client_interface.show{
+	display:block;
+}
+
+.hide_edit_interface{
+	float:right;
+	padding-right:10px;
 }

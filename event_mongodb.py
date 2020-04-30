@@ -31,6 +31,9 @@ class StoryCollection():
 	def add_client(self, client_doc):
 		self.clients.insert_one(client_doc)
 
+	def update_client(self, client_doc):
+		self.clients.replace_one({"client_id":client_doc["client_id"]}, client_doc)
+
 	def add_passage(self, passage_doc):
 		self.passages.insert_one(passage_doc)
 

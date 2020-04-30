@@ -102,7 +102,6 @@ def connect_socket(connect_event):
         emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
 def nav_event(nav_event):
-    print("NAV EVENT: ",nav_event)
     story_id = nav_event["story_id"]
     del nav_event["story_id"]
     story_dbs[story_id].add_event(nav_event)
@@ -119,12 +118,18 @@ def get_client_locations(story_id):
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id) )
 
+def update_client(client_update_doc):
+    story_id = client_update_doc["story_id"]
+    client_doc = client_update_doc["client"]
+    story_dbs[story_id].update_client(client_doc)
+    emit("did_client_update", client_doc)
 
 all_socket_handlers = {
     "connected": connect_socket,
     "nav_event": nav_event,
     "get_story_structure": get_story_structure,
-    "get_client_locations": get_client_locations
+    "get_client_locations": get_client_locations,
+    "update_client":update_client
 }
 
 #######################
