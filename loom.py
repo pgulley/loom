@@ -40,7 +40,7 @@ def landing():
         landing = landing_loc.read()
     return render_template_string(landing, twines=root_db.get_all())
 
-#This is both the fulcrum of the whole deal and also the most fragile piece of this whole arrangement. 
+#This is both the fulcrum of the whole deal and also the sketchiest part of the whole arrangement.
 @app.route('/twine/<twine_name>')
 def serve_twine(twine_name):
     with open("twines/{}.html".format(twine_name), "r") as twine_file:
@@ -56,14 +56,14 @@ def serve_twine(twine_name):
         socket = socket_io.read()
         socket_inject = "<script type='text/javascript'>{}</script>".format(socket)
 
-    with open("static/lodash.js", "r") as lodash_loc:
-        lodash = lodash_loc.read()
-        lodash_inject = "<script type='text/javascript'>{}</script>".format(lodash)
+    with open("static/iro.js", "r") as iro_loc:
+        iro = iro_loc.read()
+        iro_inject = "<script type='text/javascript'>{}</script>".format(iro)
     
     loomed = twine.replace("{LOOM_JS}", loom_js)
     loomed = loomed.replace("{LOOM_CSS}", loom_css)
     loomed = socket_inject+loomed
-    loomed = lodash_inject+loomed
+    loomed = iro_inject+loomed
     return loomed
 
 @app.route("/log", methods=["POST"])

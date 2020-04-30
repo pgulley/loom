@@ -22,6 +22,7 @@ var loom = {
 	clients_at_current_passage : []
 }
 
+var color_picker = null
 
 //Async Networking concerns
 var socket = io(`/${loom.story_id}`)
@@ -85,7 +86,13 @@ socket.on("did_client_update", function(data){
 ///////////////////////////////// UI Concerns
 
 function get_current_client_ui(){
-	return `<div class="loom_client"> 
+	if(loom.client_obj.color==undefined){
+		var color = '#000000'
+	}
+	else{
+		var color = loom.client_obj.color
+	}
+	return `<div class="loom_client you" style="background-color:${color};"> 
 				<span id="client_shortname"> ${get_shortname(loom.client_obj.username)} </span>
 				<div class='loom_client_detail'> 
 					<span id="client_uname">${loom.client_obj.username}</span>  </br>
@@ -94,6 +101,9 @@ function get_current_client_ui(){
 						<div class="hide_edit_interface"> X </div>
 						<label for="uname">Username</label>
 						<input type="text" id="uname" name="uname" value="${loom.client_obj.username}">
+						<label for="u_col">Color</label>
+						<div id="color_picker">
+						</div>
 					</div> 
 				</div> 
 			</div>`
@@ -102,6 +112,7 @@ function get_current_client_ui(){
 function update_current_client(){
 	console.log("is this working?")
 	console.log(loom.client_obj)
+	$(".you").css("background-color",loom.client_obj.color)
 	$("#client_shortname")[0].innerHTML = get_shortname(loom.client_obj.username)
 	$("#client_uname")[0].innerHTML = loom.client_obj.username
 }
@@ -109,9 +120,14 @@ function update_current_client(){
 //update other clients
 function update_other_clients(){
 	var client_boxes = loom.clients_at_current_passage.map(function(client){
-		return `<div class=loom_client > ${get_shortname(client.username)} <div class='loom_client_detail'> ${client.username} </div> </div>`
+		if(client.color==undefined){
+				var color = '#000000'
+		}
+		else{
+				var color = client.color
+		}
+		return `<div class=loom_client style="background-color:${color};"> ${get_shortname(client.username)} <div class='loom_client_detail'> ${client.username} </div> </div>`
 	})
-	console.log(client_boxes)
 	$(".other_clients")[0].innerHTML = client_boxes.join("")
 }
 
@@ -122,6 +138,20 @@ function setup_loom_ui(){
 				<div class="current_client"> ${get_current_client_ui()} </div>
 				</div>`
 	$("body").append(loom_ui)
+	if(loom.client_obj.color==undefined){
+		var color = '#000000'
+	}
+	else{
+		var color = loom.client_obj.color
+	}
+	var color_picker = new iro.ColorPicker("#color_picker",{
+		color:color,
+		width:100,
+		layoutDirection:'horizontal'
+	})
+	color_picker.on("input:end", function(color){
+		update_color(color.hexString)
+	})
 	update_other_clients()
 }
 
@@ -160,4 +190,21 @@ $(document).on("keypress", "#uname", function(e){
 	}
 })
 
+$(document).on("keypress", "#u_col", function(e){
+	if(e.which==13){
+		if(loom.client_obj.color!=this.value){
+			loom.client_obj.color = this.value
+			socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})
+		}
+	}
+})
+
+function update_color(color){
+	console.log(color)
+	console.log("updatin color")
+	if(loom.client_obj.color!=color){
+		loom.client_obj.color = color
+		socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})
+	}
+}
 
