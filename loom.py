@@ -87,13 +87,19 @@ def admin(twine_id):
 # socket functions    #
 #######################
 def connect_socket(connect_event):
+
     story_id = connect_event["story_id"]
     del connect_event["story_id"]
-    username = get_random_username()
-    client_doc = {"client_id":connect_event["client_id"], "username":username}
-    story_dbs[story_id].add_client(client_doc)
-    del client_doc["_id"]
-    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+    all_clients = story_dbs[story_id].get_all_clients()
+    if connect_event["client_id"] in [c["client_id"] for c in all_clients]:
+        client_doc = story_dbs[story_id].get_client(connect_event["client_id"])
+        emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+    else:
+        username = get_random_username()
+        client_doc = {"client_id":connect_event["client_id"], "username":username}
+        story_dbs[story_id].add_client(client_doc)
+        del client_doc["_id"]
+        emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
 def nav_event(nav_event):
     print("NAV EVENT: ",nav_event)

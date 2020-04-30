@@ -3,6 +3,7 @@
 //shows client states within story structure
 
 var loom_admin = {
+	setup:false,
 	story_id:document.URL.split("/")[4],
 	passages:null,
 	client_states:null,
@@ -92,8 +93,12 @@ socket.on('connect', function() {
 
 socket.on("story_structure", function(structure){
 	loom_admin.passages = structure
-	setup_table()
-	setup_graph()
+	if(loom_admin.setup == false){
+		setup_table()
+		setup_graph()
+		loom_admin.setup = true
+	}
+
 })
 
 socket.on("clients_present", function(clients){

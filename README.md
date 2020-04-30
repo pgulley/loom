@@ -37,7 +37,7 @@ All this to say, make sure you have a mongodb instance running or it won't work.
 - [X] client-side admin ui 
 - [X] store story graph stucture
 - [X] Load story structure on server-side
-- [ ] fix client-side persistance bug
+- [X] fix client-side persistance bug
 - [ ] Client-defined names and icons
 - [ ] flexible configuration and deployment options 
 - [ ] choose a better wsgi solution for non-dev deployments
