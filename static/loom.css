@@ -24,9 +24,17 @@
 	margin-right:0px;
 }
 
-.loom_client.you{
+.other_clients{
+	display:inline-block;
+}
+
+.current_client{
+	display:inline-block;
+	margin-left:5px;
+}
+
+.current_client .loom_client{
 	border:5px solid white;
-	float:right;
 }
 
 .loom_client_detail{

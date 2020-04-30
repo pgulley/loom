@@ -10,6 +10,7 @@ function makeid(length) {
    return result;
 }
 
+
 var loom = {
 	story_id: document.URL.split("/").last(),
 	client_id : makeid(10),
@@ -34,9 +35,7 @@ socket.on('connect', function() {
 socket.on("client_connect_ok", function(data){
 	console.log("connected: "+data["username"])
 	loom.client_obj = data
-	console.log(loom)
-	loom.clients_at_current_passage = [data]
-	render_loom_ui()
+	setup_loom_ui()
 })
 
 
@@ -67,11 +66,12 @@ $(window).on("beforeunload",function() {
 
 socket.on("clients_present", function(data){
 	loom.clients_at_current_passage = data.filter(function(event){
-		return event["event"]["passage_id"] == loom.current_passage
+		return (event["event"]["passage_id"] == loom.current_passage) & (event["client"]["client_id"]!=loom.client_id )
  	}).map(function(event){
  		return event["client"]
  	})
- 	render_loom_ui()
+ 	console.log("present event")
+ 	update_other_clients()
 })
 
 socket.on("did_client_update", function(data){
@@ -80,30 +80,41 @@ socket.on("did_client_update", function(data){
 
 ///////////////////////////////// UI Concerns
 
-function render_loom_ui(){
+function get_current_client_ui(){
+	var shortname = loom.client_obj.username.split(" ").map(function(i){return i[0]}).join(" ").toUpperCase()
+	return `<div class="loom_client you"> 
+				${shortname} 
+				<div class='loom_client_detail'> 
+					${loom.client_obj.username}  </br>
+					<div class="edit_client_button show">edit</div>
+					<div class="edit_client_interface hide">
+						<div class="hide_edit_interface"> X </div>
+						<label for="uname">Username</label>
+						<input type="text" id="uname" name="uname" value="${loom.client_obj.username}">
+					</div> 
+				</div> 
+			</div>`
+}
+
+//update other clients
+function update_other_clients(){
 	var client_boxes = loom.clients_at_current_passage.map(function(client){
+		console.log(client)
 		var shortuname = client.username.split(" ").map(function(i){return i[0]}).join(" ").toUpperCase()
-		if(client.client_id == loom.client_id){
-			return `<div class="loom_client you"> 
-						${shortuname} 
-						<div class='loom_client_detail'> 
-							${client.username}  </br>
-							<div class="edit_client_button show">edit</div>
-							<div class="edit_client_interface hide">
-								<div class="hide_edit_interface"> X </div>
-									<label for="uname">Username</label>
-  									<input type="text" id="uname" name="uname" value="${client.username}">
-							</div> 
-						</div> 
-					</div>`
-		}
-		else{
-			return `<div class=loom_client > ${shortuname} <div class='loom_client_detail'> ${client.username} </div> </div>`
-		}
+		return `<div class=loom_client > ${shortuname} <div class='loom_client_detail'> ${client.username} </div> </div>`
 	})
-	var loom_ui = `<div class="loom_ui_main"> ${client_boxes.join('')} <div class='loom_client_detail'>  </div> </div>` 
-	$(".loom_ui_main").remove()
+	console.log(client_boxes)
+	$(".other_clients")[0].innerHTML = client_boxes.join("")
+}
+
+//setup loom ui
+function setup_loom_ui(){
+	var loom_ui = `<div class="loom_ui_main"> 
+				<div class="other_clients">  </div>
+				<div class="current_client"> ${get_current_client_ui()} </div>
+				</div>`
 	$("body").append(loom_ui)
+	update_other_clients()
 }
 
 $(document).on("click", ".loom_client", function(){
@@ -134,8 +145,6 @@ $(document).on("click", ".hide_edit_interface", function(){
 
 $(document).on("keypress", "#uname", function(e){
 	if(e.which==13){
-		console.log("user pressed enter on name")
-		console.log(this.value)
 		if(loom.client_obj.username!=this.value){
 			loom.client_obj.username = this.value
 			console.log(loom.client_obj)
