@@ -18,6 +18,10 @@ class RootCollection():
 		return clean_mongo_doc(self.stories.find_one({"story_id":story_id}))
 
 	def get_all(self):
+		print(self)
+		print(self.db)
+		print(self.stories)
+
 		return [clean_mongo_doc(item) for item in self.stories.find()]
 
 
