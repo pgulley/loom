@@ -27,7 +27,7 @@ app.config['SECRET_KEY'] = conf["socket_secret"]
 socketio = SocketIO(app)
 
 client = MongoClient(conf["mongodb_uri"]) 
-root_db = RootCollection(client.root)
+root_db = RootCollection(client)
 story_dbs = {}
 
 ######################
