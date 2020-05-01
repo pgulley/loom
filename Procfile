@@ -1,1 +1,1 @@
-web: python loom.py
+web: python loom.py deploy

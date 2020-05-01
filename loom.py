@@ -3,6 +3,7 @@ from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
 import json
 import os
+import sys
 
 from event_mongodb import RootCollection, StoryCollection
 from random_username import get_random_username
@@ -11,8 +12,11 @@ import process_twine
 """
 Main server file
 """
-if os.path.isfile("conf.json"):
-    conf = json.load(open("conf.json"))
+if sys.argv[1]=="deploy":
+    conf = {
+        "mongodb_uri":os.environ["MONGODB_URI"],
+        "socket_secret":os.environ["SOCKET_SECRET"]
+    }
 else:
     conf = json.load(open("dev_conf.json"))
 
