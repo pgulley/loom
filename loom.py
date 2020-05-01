@@ -11,8 +11,10 @@ import process_twine
 """
 Main server file
 """
-
-conf = json.load(open("conf.json"))
+if os.path.isfile("conf.json"):
+    conf = json.load(open("conf.json"))
+else:
+    conf = json.load(open("dev_conf.json"))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = conf["socket_secret"]
