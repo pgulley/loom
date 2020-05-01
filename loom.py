@@ -26,7 +26,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = conf["socket_secret"]
 socketio = SocketIO(app)
 
-client = MongoClient(conf["mongodb_uri"],retryWrites=false) 
+client = MongoClient(conf["mongodb_uri"],retryWrites=False) 
 db = client[conf["mongodb_dbname"]]
 root_db = RootCollection(db)
 story_dbs = {}
