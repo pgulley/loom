@@ -63,4 +63,4 @@ class StoryCollection():
 		all_current_events = [{"event": self.get_current_client_location_event(client["client_id"]), "client":client} 
 								for client in self.get_all_clients()]
 		#don't return exit events
-		return filter(lambda x: (x["event"]["passage_id"] != "event:exit"), all_current_events)
+		return list(filter(lambda x: (x["event"]["passage_id"] != "event:exit"), all_current_events))

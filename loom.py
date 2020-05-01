@@ -1,16 +1,13 @@
 from flask import Flask, request, render_template, render_template_string, send_from_directory
 from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
-from event_mongodb import RootCollection, StoryCollection
-from tinydb import TinyDB
-from event_db import event_db 
-from story_db import story_db
-from random_username import get_random_username
-import process_twine
-import time
 import json
 import os
-import urlparse
+
+from event_mongodb import RootCollection, StoryCollection
+from random_username import get_random_username
+import process_twine
+
 """
 Main server file
 """
@@ -141,10 +138,9 @@ def setup():
     twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
     already_twines = [story['story_id'] for story in root_db.get_all()]
     for story_id in twines:
-        #event_dbs[story_id] = event_db(TinyDB("db/{}_event_db.json".format(story_id)))
         story_dbs[story_id] = StoryCollection(client[story_id])
 
-        for name, function in all_socket_handlers.iteritems():
+        for name, function in all_socket_handlers.items():
             socketio.on_event(name, function, namespace="/{}".format(story_id))
 
         #this setup should only happen once per twine per database instantiation 
