@@ -26,7 +26,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = conf["socket_secret"]
 socketio = SocketIO(app)
 
-client = MongoClient(conf["mongodb_uri"]) 
+client = MongoClient(conf["mongodb_uri"],retryWrites=false) 
 db = client[conf["mongodb_dbname"]]
 root_db = RootCollection(db)
 story_dbs = {}
@@ -79,7 +79,7 @@ def exit_event():
     story = log_data["story_id"]
     del log_data["story_id"]
     story_dbs[story].add_event(log_data)
-    
+
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
