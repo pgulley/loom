@@ -163,5 +163,5 @@ def setup():
 
 if __name__ == '__main__':
     setup()
-    socketio.run(app)
     print("Running {}".format(__name__))
+    socketio.run(app)
