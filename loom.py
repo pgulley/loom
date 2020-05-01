@@ -76,10 +76,8 @@ def serve_twine(twine_name):
 def exit_event():
     request.get_data()
     log_data = json.loads(request.data)
-    story = log_data["story_id"]
-    del log_data["story_id"]
-    story_dbs[story].add_event(log_data)
-
+    story_id = log_data["story_id"]    
+    story_dbs[story_id].add_event(log_data)
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
@@ -163,7 +161,7 @@ def setup():
                 story_dbs[story_id].add_passage(passage)
 
 
-if __name__ == '__main__':
-    setup()
-    print("Setup Loom. Running...")
-    socketio.run(app)
+
+setup()
+#print("Setup Loom. Running...")
+#socketio.run(app)
