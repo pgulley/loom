@@ -1,5 +1,6 @@
 {
 	"conf_name":"Local Dev",
 	"socket_secret":"Not on Github nuhuh", 
-	"mongodb_uri":"localhost:27017"
+	"mongodb_uri":"localhost:27017",
+	"mongodb_dbname":"default"
 }

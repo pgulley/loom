@@ -4,6 +4,7 @@ from pymongo import MongoClient
 import json
 import os
 import sys
+import time
 
 from event_mongodb import RootCollection, StoryCollection
 from random_username import get_random_username
@@ -13,12 +14,11 @@ import process_twine
 Main server file
 """
 if sys.argv[1]=="deploy":
-    print("LIVE DEPLOYMENT")
     conf = {
         "mongodb_uri":os.environ["MONGODB_URI"],
-        "socket_secret":os.environ["SOCKET_SECRET"]
+        "mongodb_dbname":os.environ["MONGODB_URI"].split("/")[-1], 
+        "socket_secret":os.environ["SOCKET_SECRET"],
     }
-    print(conf)
 else:
     conf = json.load(open("dev_conf.json"))
 
@@ -27,7 +27,8 @@ app.config['SECRET_KEY'] = conf["socket_secret"]
 socketio = SocketIO(app)
 
 client = MongoClient(conf["mongodb_uri"]) 
-root_db = RootCollection(client)
+db = client[conf["mongodb_dbname"]]
+root_db = RootCollection(db)
 story_dbs = {}
 
 ######################
@@ -78,7 +79,9 @@ def exit_event():
     story = log_data["story_id"]
     del log_data["story_id"]
     story_dbs[story].add_event(log_data)
-    return {"Status":"OK"}
+    
+    client_locations = story_dbs[story_id].get_all_current_client_location_events()
+    emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 @app.route('/twine/<twine_id>/admin')
 def admin(twine_id):
@@ -108,16 +111,14 @@ def connect_socket(connect_event):
 
 def nav_event(nav_event):
     story_id = nav_event["story_id"]
-    del nav_event["story_id"]
     story_dbs[story_id].add_event(nav_event)
+    time.sleep(1) #this shouldn't be nessecary
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
-
 
 def get_story_structure(story_id):
     passages = story_dbs[story_id].get_all_passages()
     emit("story_structure", passages, namespace="/{}".format(story_id))
-
 
 def get_client_locations(story_id):
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
@@ -146,7 +147,7 @@ def setup():
     twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
     already_twines = [story['story_id'] for story in root_db.get_all()]
     for story_id in twines:
-        story_dbs[story_id] = StoryCollection(client[story_id])
+        story_dbs[story_id] = StoryCollection(db, story_id)
 
         for name, function in all_socket_handlers.items():
             socketio.on_event(name, function, namespace="/{}".format(story_id))
