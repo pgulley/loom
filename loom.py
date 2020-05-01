@@ -13,10 +13,12 @@ import process_twine
 Main server file
 """
 if sys.argv[1]=="deploy":
+    print("LIVE DEPLOYMENT")
     conf = {
         "mongodb_uri":os.environ["MONGODB_URI"],
         "socket_secret":os.environ["SOCKET_SECRET"]
     }
+    print(conf)
 else:
     conf = json.load(open("dev_conf.json"))
 
