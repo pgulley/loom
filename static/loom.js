@@ -181,27 +181,14 @@ $(document).on("click", ".hide_edit_interface", function(){
 	$(this).parent().parent().removeClass("large")
 })
 
-$(document).on("keypress", "#uname", function(e){
-	if(e.which==13){
-		if(loom.client_obj.username!=this.value){
-			loom.client_obj.username = this.value
-			socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})
-		}
-	}
-})
-
-$(document).on("keypress", "#u_col", function(e){
-	if(e.which==13){
-		if(loom.client_obj.color!=this.value){
-			loom.client_obj.color = this.value
-			socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})
-		}
+$(document).on("blur", "#uname", function(e){
+	if(loom.client_obj.username!=this.value){
+		loom.client_obj.username = this.value
+		socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})
 	}
 })
 
 function update_color(color){
-	console.log(color)
-	console.log("updatin color")
 	if(loom.client_obj.color!=color){
 		loom.client_obj.color = color
 		socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})

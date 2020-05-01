@@ -40,8 +40,8 @@ All this to say, make sure you have a mongodb instance running or it won't work.
 - [X] store story graph stucture
 - [X] Load story structure on server-side
 - [X] Client-defined names and icons
-- [ ] flexible configuration and deployment options 
-- [ ] choose a better wsgi solution for non-dev deployments
+- [X] flexible configuration and deployment options 
+- [X] choose a better wsgi solution for non-dev deployments: using eventlet
 - [ ] ui polish pls and thx
 
 #### Down the road options

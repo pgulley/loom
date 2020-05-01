@@ -15,13 +15,13 @@ import urlparse
 Main server file
 """
 
-story_db_ = story_db(TinyDB("db/story_db_.json"))
-event_dbs = {}
+conf = json.load(open("conf.json"))
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'not_on_github_no_you_dont'
+app.config['SECRET_KEY'] = conf["socket_secret"]
 socketio = SocketIO(app)
 
-client = MongoClient(port=27017) 
+client = MongoClient(conf["mongodb_uri"]) 
 root_db = RootCollection(client.root)
 story_dbs = {}
 
@@ -159,3 +159,4 @@ def setup():
 if __name__ == '__main__':
     setup()
     socketio.run(app)
+    print("Running {}".format(__name__))
