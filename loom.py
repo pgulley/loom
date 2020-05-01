@@ -39,9 +39,9 @@ story_dbs = {}
 def send_static(path):
     return send_from_directory("static",path)
 
-
 @app.route('/')
 def landing():
+    print("GET landing")
     with open("templates/landing.html") as landing_loc:
         landing = landing_loc.read()
     return render_template_string(landing, twines=root_db.get_all())
@@ -144,9 +144,11 @@ all_socket_handlers = {
 #######################
 
 def setup():
+    print("Setting up")
     twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
     already_twines = [story['story_id'] for story in root_db.get_all()]
     for story_id in twines:
+        print("setup {}".format(story_id))
         story_dbs[story_id] = StoryCollection(db, story_id)
 
         for name, function in all_socket_handlers.items():
@@ -163,5 +165,5 @@ def setup():
 
 if __name__ == '__main__':
     setup()
-    print("Running {}".format(__name__))
+    print("Setup Loom. Running...")
     socketio.run(app)
