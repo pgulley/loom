@@ -1,1 +1,1 @@
-web: gunicorn --worker-class eventlet -w 1 loom:app
+web: python loom.py

@@ -27,7 +27,7 @@ var color_picker = null
 //Async Networking concerns
 var socket = io(`/${loom.story_id}`)
 socket.on('connect', function() {
-    socket.emit('connected', 
+    socket.emit('confirm_connected', 
     	{
     		"story_id": loom.story_id,
     		"passage_id":"event:enter",

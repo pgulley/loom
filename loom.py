@@ -4,32 +4,30 @@ from pymongo import MongoClient
 import json
 import os
 import sys
-import time
-
 from event_mongodb import RootCollection, StoryCollection
 from random_username import get_random_username
 import process_twine
 
-"""
-Main server file
-"""
-if sys.argv[1]=="deploy":
-    conf = {
-        "mongodb_uri":os.environ["MONGODB_URI"],
-        "mongodb_dbname":os.environ["MONGODB_URI"].split("/")[-1], 
-        "socket_secret":os.environ["SOCKET_SECRET"],
-    }
-else:
-    conf = json.load(open("dev_conf.json"))
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = conf["socket_secret"]
+
+app = Flask("LOOM")
+app.config['SECRET_KEY'] = os.environ["SOCKET_SECRET"]
 socketio = SocketIO(app)
 
-client = MongoClient(conf["mongodb_uri"],retryWrites=False) 
-db = client[conf["mongodb_dbname"]]
+client = MongoClient(os.environ["MONGODB_URI"],retryWrites=False) 
+
+#to handle dev environ
+if "localhost" in os.environ["MONGODB_URI"]:
+    db_name = "default"
+else:
+    db_name = os.environ["MONGODB_URI"].split("/")[-1]
+
+db = client[db_name]
 root_db = RootCollection(db)
 story_dbs = {}
+
+
+
 
 ######################
 # main server functs #
@@ -46,7 +44,7 @@ def landing():
         landing = landing_loc.read()
     return render_template_string(landing, twines=root_db.get_all())
 
-#This is both the fulcrum of the whole deal and also the sketchiest part of the whole arrangement.
+#Blunt but effective
 @app.route('/twine/<twine_name>')
 def serve_twine(twine_name):
     with open("twines/{}.html".format(twine_name), "r") as twine_file:
@@ -110,7 +108,6 @@ def connect_socket(connect_event):
 def nav_event(nav_event):
     story_id = nav_event["story_id"]
     story_dbs[story_id].add_event(nav_event)
-    time.sleep(1) #this shouldn't be nessecary
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
@@ -132,7 +129,7 @@ def update_client(client_update_doc):
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 all_socket_handlers = {
-    "connected": connect_socket,
+    "confirm_connected": connect_socket,
     "nav_event": nav_event,
     "get_story_structure": get_story_structure,
     "get_client_locations": get_client_locations,
@@ -159,9 +156,10 @@ def setup():
             root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)
-
-
+    print("finished_setup")
 
 setup()
+socketio.run(app)
+
 #print("Setup Loom. Running...")
 #socketio.run(app)
