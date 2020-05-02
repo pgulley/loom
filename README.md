@@ -24,6 +24,8 @@ As of recently, we're using mongodb for database stuff.
 I may switch this over eventually for easier deployments by hobbyists, but for now it solves a lot of concurrency issues to use mongo.
 All this to say, make sure you have a mongodb instance running or it won't work. 
 
+### It's Deployed!
+Find a live version (here)[https://twine-loom-test.herokuapp.com/twine/twine] if you please. 
 
 ### Development Status
 
