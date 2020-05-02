@@ -92,7 +92,7 @@ def admin(twine_id):
 # socket functions    #
 #######################
 def connect_socket(connect_event):
-
+    print("connecting socket")
     story_id = connect_event["story_id"]
     del connect_event["story_id"]
     all_clients = story_dbs[story_id].get_all_clients()
@@ -107,6 +107,7 @@ def connect_socket(connect_event):
         emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
 def nav_event(nav_event):
+    print("nav event")
     story_id = nav_event["story_id"]
     story_dbs[story_id].add_event(nav_event)
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
