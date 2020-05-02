@@ -1,1 +1,1 @@
-web: python loom.py
+web: gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 loom:app  
