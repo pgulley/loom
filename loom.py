@@ -12,7 +12,7 @@ import process_twine
 
 app = Flask("LOOM")
 app.config['SECRET_KEY'] = os.environ["SOCKET_SECRET"]
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 client = MongoClient(os.environ["MONGODB_URI"],retryWrites=False) 
 
