@@ -18,6 +18,7 @@
 	margin-right:10px;
 	border-radius:60px;
 	position:relative;
+	text-align:center;
 }
 
 .loom_client:last-child{
@@ -49,6 +50,7 @@
 	left:-85;
 	padding-left:10px;
 	border:2px solid white;
+	text-align:left;
 }
 
 .you.loom_client_detail{
