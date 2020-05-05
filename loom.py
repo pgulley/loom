@@ -56,18 +56,21 @@ def serve_twine(twine_name):
     with open("static/loom.css") as css:
         loom_css = css.read()
 
-    with open("static/socketio.js", "r") as socket_io:
-        socket = socket_io.read()
-        socket_inject = "<script type='text/javascript'>{}</script>".format(socket)
 
-    with open("static/iro.js", "r") as iro_loc:
-        iro = iro_loc.read()
-        iro_inject = "<script type='text/javascript'>{}</script>".format(iro)
+    socket_inject = "<script type='text/javascript' src='/static/socketio.js'></script>"
+    iro_inject = "<script type='text/javascript' src='/static/iro.js'></script>"
+    jquery_inject = "<script type='text/javascript' src='/static/jquery.min.js'></script>"
+    bootjs_inject = "<script type='text/javascript' src='/static/bootstrap.bundle.min.js'></script>"
+    bootcss_inject = "<link rel='stylesheet' type='text/css' href='/static/bootstrap.min.css'>"
+        
     
     loomed = twine.replace("{LOOM_JS}", loom_js)
     loomed = loomed.replace("{LOOM_CSS}", loom_css)
+    loomed = bootcss_inject+loomed
     loomed = socket_inject+loomed
     loomed = iro_inject+loomed
+    loomed = loomed+bootjs_inject
+    #loomed = jquery_inject+loomed
     return loomed
 
 @app.route("/log", methods=["POST"])

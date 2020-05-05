@@ -98,12 +98,6 @@ function get_current_client_ui(){
 					<span id="client_uname">${loom.client_obj.username}</span>  </br>
 					<div class="edit_client_button show">edit</div>
 					<div class="edit_client_interface hide">
-						<div class="hide_edit_interface"> X </div>
-						<label for="uname">Username</label>
-						<input type="text" id="uname" name="uname" value="${loom.client_obj.username}">
-						<label for="u_col">Color</label>
-						<div id="color_picker">
-						</div>
 					</div> 
 				</div> 
 			</div>`
@@ -131,12 +125,35 @@ function update_other_clients(){
 	$(".other_clients")[0].innerHTML = client_boxes.join("")
 }
 
-//setup loom ui
+//setup loom ui. Called once per document
 function setup_loom_ui(){
-	var loom_ui = `<div class="loom_ui_main"> 
-				<div class="other_clients">  </div>
+	var loom_ui = `
+
+			<div class="loom_ui_top">
 				<div class="current_client"> ${get_current_client_ui()} </div>
-				</div>`
+				<div class="modal" id="user_modal" tabindex="-1" role="dialog">
+				  <div class="modal-dialog" role="document">
+				    <div class="modal-content" id="user_modal_content">
+				      <div class="modal-header">
+				        <h5 class="modal-title">Edit User Properties</h5>
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				          <span aria-hidden="true">&times;</span>
+				        </button>
+				      </div>
+				      <div class="modal-body">
+						<label for="uname">Username</label>
+						<input type="text" id="uname" name="uname" value="${loom.client_obj.username}">
+						<label for="u_col">Color</label>
+						<div id="color_picker">
+						</div>
+				      </div>
+				    </div>
+				  </div>
+				</div>
+			</div>
+			<div class="loom_ui_bottom"> 
+				<div class="other_clients">  </div>
+			</div>`
 	$("body").append(loom_ui)
 	if(loom.client_obj.color==undefined){
 		var color = '#000000'
@@ -152,6 +169,7 @@ function setup_loom_ui(){
 	color_picker.on("input:end", function(color){
 		update_color(color.hexString)
 	})
+	$('#user_modal').modal()
 	update_other_clients()
 }
 
@@ -170,6 +188,7 @@ $(document).on("mouseout", ".loom_client_detail", function(){
 })
 
 $(document).on("click",".edit_client_button", function(){
+	$("#user_modal").modal("show")
 	$(this).parent().addClass("large")
 	$(this).toggleClass("show").toggleClass("hide")
 	$(this).next().toggleClass("show").toggleClass("hide")

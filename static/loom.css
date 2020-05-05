@@ -1,12 +1,19 @@
-.loom_ui_main{
+.loom_ui_bottom{
 	position: absolute;
 	bottom: 10px;
 	right: 10px;
 	background: transparent;
 	padding: 10px;
 }
+.loom_ui_top{
+	position:absolute;
+	top:10px;
+	right:10px;
+	background:transparent;
+}
 
 .loom_client{
+	box-sizing:content-box;
 	height:30px;
 	width:30px;
 	line-height:30px;
@@ -53,14 +60,15 @@
 	text-align:left;
 }
 
-.you.loom_client_detail{
+.you .loom_client_detail{
 	height:100px;
+	top:60px;
 }
 
 .loom_client_detail.large{
 	width:400px;
 	height:200px;
-	top:-220px;
+	top:100px;
 	left:-365px;
 }
 
@@ -91,4 +99,12 @@
 .hide_edit_interface{
 	float:right;
 	padding-right:10px;
+}
+
+label{
+	display:block;
+}
+
+#user_modal_content{
+	background:#4d4d4d !important;
 }
