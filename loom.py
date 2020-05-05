@@ -59,7 +59,7 @@ def serve_twine(twine_name):
 
     socket_inject = "<script type='text/javascript' src='/static/socketio.js'></script>"
     iro_inject = "<script type='text/javascript' src='/static/iro.js'></script>"
-    jquery_inject = "<script type='text/javascript' src='/static/jquery.min.js'></script>"
+    #jquery_inject = "<script type='text/javascript' src='/static/jquery.min.js'></script>"
     bootjs_inject = "<script type='text/javascript' src='/static/bootstrap.bundle.min.js'></script>"
     bootcss_inject = "<link rel='stylesheet' type='text/css' href='/static/bootstrap.min.css'>"
         

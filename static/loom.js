@@ -44,7 +44,6 @@ socket.on("client_connect_ok", function(data){
 
 
 $(document).on(":passagestart",function(ev){
-	console.log("look I'm here")
 	loom.current_passage = ev.content.id
 	var timestamp = Date.now()
 	var event_log = {
@@ -97,8 +96,6 @@ function get_current_client_ui(){
 				<div class='loom_client_detail'> 
 					<span id="client_uname">${loom.client_obj.username}</span>  </br>
 					<div class="edit_client_button show">edit</div>
-					<div class="edit_client_interface hide">
-					</div> 
 				</div> 
 			</div>`
 }
@@ -189,15 +186,6 @@ $(document).on("mouseout", ".loom_client_detail", function(){
 
 $(document).on("click",".edit_client_button", function(){
 	$("#user_modal").modal("show")
-	$(this).parent().addClass("large")
-	$(this).toggleClass("show").toggleClass("hide")
-	$(this).next().toggleClass("show").toggleClass("hide")
-})
-
-$(document).on("click", ".hide_edit_interface", function(){
-	$(this).parent().toggleClass("show").toggleClass("hide")
-	$(this).parent().prev().toggleClass("show").toggleClass("hide")
-	$(this).parent().parent().removeClass("large")
 })
 
 $(document).on("blur", "#uname", function(e){
