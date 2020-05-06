@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, render_template_string, send_from_directory
 from flask_socketio import SocketIO, emit
+from flask_login import LoginManager
 from pymongo import MongoClient
 import json
 import os
@@ -13,8 +14,8 @@ import process_twine
 app = Flask("LOOM")
 app.config['SECRET_KEY'] = os.environ["SOCKET_SECRET"]
 socketio = SocketIO(app, cors_allowed_origins="*")
-
 client = MongoClient(os.environ["MONGODB_URI"],retryWrites=False) 
+login_manager = LoginManager()
 
 #to handle dev environ
 if "localhost" in os.environ["MONGODB_URI"]:
@@ -27,7 +28,9 @@ root_db = RootCollection(db)
 story_dbs = {}
 
 
-
+@login_manager.user_loader
+def load_user(user_id):
+    return root_db.get_user(user_id)
 
 ######################
 # main server functs #
@@ -59,7 +62,6 @@ def serve_twine(twine_name):
 
     socket_inject = "<script type='text/javascript' src='/static/socketio.js'></script>"
     iro_inject = "<script type='text/javascript' src='/static/iro.js'></script>"
-    #jquery_inject = "<script type='text/javascript' src='/static/jquery.min.js'></script>"
     bootjs_inject = "<script type='text/javascript' src='/static/bootstrap.bundle.min.js'></script>"
     bootcss_inject = "<link rel='stylesheet' type='text/css' href='/static/bootstrap.min.css'>"
         
@@ -70,7 +72,7 @@ def serve_twine(twine_name):
     loomed = socket_inject+loomed
     loomed = iro_inject+loomed
     loomed = loomed+bootjs_inject
-    #loomed = jquery_inject+loomed
+
     return loomed
 
 @app.route("/log", methods=["POST"])
@@ -146,7 +148,7 @@ all_socket_handlers = {
 def setup():
     print("Setting up")
     twines = [fname.split(".")[0] for fname in filter(lambda x: x[0]!=".", os.listdir("twines"))]
-    already_twines = [story['story_id'] for story in root_db.get_all()]
+    already_twines = [story['story_id'] for story in root_db.get_all_stories()]
     for story_id in twines:
         print("setup {}".format(story_id))
         story_dbs[story_id] = StoryCollection(db, story_id)

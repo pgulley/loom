@@ -1,5 +1,7 @@
 #A rewrite of the database interfaces using mongodb
 from pymongo import MongoClient
+from user_obj import User
+
 
 def clean_mongo_doc(doc):
 	#the mongo-internal object id is irrelevant
@@ -10,6 +12,7 @@ class RootCollection():
 	def __init__(self, db):
 		self.db = db
 		self.stories = db.stories
+		self.users = db.users
 
 	def add_story(self, story_doc):
 		self.stories.insert_one(story_doc)
@@ -17,8 +20,14 @@ class RootCollection():
 	def get_story(self, story_id):
 		return clean_mongo_doc(self.stories.find_one({"story_id":story_id}))
 
-	def get_all(self):
+	def get_all_stories(self):
 		return [clean_mongo_doc(item) for item in self.stories.find()]
+
+	def add_user(self, UserDoc):
+		self.users.insert_one(UserDoc)
+
+	def get_user(self, user_id):
+		return self.users.get_one({"user_id":user_id})
 
 
 class StoryCollection():
