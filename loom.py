@@ -9,8 +9,6 @@ from event_mongodb import RootCollection, StoryCollection
 from random_username import get_random_username
 import process_twine
 
-
-
 app = Flask("LOOM")
 app.config['SECRET_KEY'] = os.environ["SOCKET_SECRET"]
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -36,16 +34,23 @@ def load_user(user_id):
 # main server functs #
 ######################
 
+
 @app.route('/static/<path>')
 def send_static(path):
     return send_from_directory("static",path)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    with open("templates/login.html") as login_loc:
+        login = login_loc.read()
+    return render_template_string(login)
 
 @app.route('/')
 def landing():
     print("GET landing")
     with open("templates/landing.html") as landing_loc:
         landing = landing_loc.read()
-    return render_template_string(landing, twines=root_db.get_all())
+    return render_template_string(landing, twines=root_db.get_all_stories())
 
 #Blunt but effective
 @app.route('/twine/<twine_name>')
@@ -96,6 +101,17 @@ def admin(twine_id):
 #######################
 # socket functions    #
 #######################
+
+@socketio.on("try_login")
+def try_login(login_event):
+    print("tried login")
+    #some logic here to get and validate the user
+    #and decide where to send them based on their status
+    #if the user isn't valid, kick them back to the login. 
+    #if the user is an admin or has multiple stories, send them to the landing page
+    #if the user has only one story, send them there
+
+
 def connect_socket(connect_event):
     print("connecting socket")
     story_id = connect_event["story_id"]
@@ -163,7 +179,13 @@ def setup():
             root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)
-    print("finished_setup")
+    print("finished story setup")
+    new, admin_user = root_db.new_user("admin", os.environ["ADMIN_PASS"])
+    if new:
+        for story_id in twines:
+            admin_user.twines.append({"story_id":story_id, "client_id":None, "admin":True})
+        root_db.save_user(admin_user)
+    print(admin_user)
 
 setup()
 #socketio.run(app)

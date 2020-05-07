@@ -1,6 +1,43 @@
 #A rewrite of the database interfaces using mongodb
 from pymongo import MongoClient
-from user_obj import User
+
+from passlib.hash import sha256_crypt
+import uuid
+
+class User():
+	def __init__(self, mongo_doc):
+		self.user_id = mongo_doc["user_id"]
+		self.pass_hash = mongo_doc["pass_hash"]
+		self.username = mongo_doc["username"]
+
+		#[{twine_story_id:str, client_id:str, admin:bool},...]
+		self.twines = mongo_doc["twines"] 
+
+		self.is_authenticated = mongo_doc["is_authenticated"]
+		self.is_active = False #unnessecary for loom
+		self.is_anonymous = False #unessecary for loom
+
+	def get_id(self):
+		return self.client_id
+
+	def validate_pass(self, password):
+		self.is_authenticated = sha256_crypt.verify(password, self.pass_hash)
+		return self.is_authenticated
+
+	def change_pass(self, new_pass): 
+		self.pass_hash = sha256_crypt.encrypt(new_pass)
+		return True
+
+	def to_doc(self):
+		return {
+			"username":self.username,
+			"pass_hash":self.pass_hash,
+			"user_id":self.user_id,
+			"twines":self.twines,
+			"is_authenticated":self.is_authenticated,
+		}
+	def __repr__(self):
+		return str(self.to_doc())
 
 
 def clean_mongo_doc(doc):
@@ -23,11 +60,28 @@ class RootCollection():
 	def get_all_stories(self):
 		return [clean_mongo_doc(item) for item in self.stories.find()]
 
-	def add_user(self, UserDoc):
-		self.users.insert_one(UserDoc)
+	def new_user(self, username, password):
+		doc = {
+			"username":username,
+			"pass_hash":sha256_crypt.encrypt(password),
+			"user_id":str(uuid.uuid4()),
+			"twines":[],
+			"is_authenticated":False
+		}
+		#check if username exists in db yet
+		if self.users.find({"username":username}).count() == 0:
+			self.users.insert_one(doc)
+			user = User(doc)
+			return True, user
+		else:
+			return False, self.get_user(username)
 
-	def get_user(self, user_id):
-		return self.users.get_one({"user_id":user_id})
+	def get_user(self, username):
+		return User(self.users.find_one({"username":username}))
+
+	def save_user(self, User):
+		self.users.replace_one({"user_id":User.user_id}, User.to_doc())
+		return User
 
 
 class StoryCollection():
