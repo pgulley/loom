@@ -1,6 +1,7 @@
-from flask import Flask, request, render_template, render_template_string, send_from_directory
+from flask import Flask, request, render_template, render_template_string, send_from_directory, redirect
 from flask_socketio import SocketIO, emit
-from flask_login import LoginManager
+from flask_login import LoginManager, login_required, login_user, current_user
+from urllib.parse import parse_qs
 from pymongo import MongoClient
 import json
 import os
@@ -14,6 +15,8 @@ app.config['SECRET_KEY'] = os.environ["SOCKET_SECRET"]
 socketio = SocketIO(app, cors_allowed_origins="*")
 client = MongoClient(os.environ["MONGODB_URI"],retryWrites=False) 
 login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
 #to handle dev environ
 if "localhost" in os.environ["MONGODB_URI"]:
@@ -28,7 +31,8 @@ story_dbs = {}
 
 @login_manager.user_loader
 def load_user(user_id):
-    return root_db.get_user(user_id)
+    user = root_db.get_user_by_id(user_id)
+    return user
 
 ######################
 # main server functs #
@@ -39,15 +43,33 @@ def load_user(user_id):
 def send_static(path):
     return send_from_directory("static",path)
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    with open("templates/login.html") as login_loc:
-        login = login_loc.read()
-    return render_template_string(login)
+    if request.method == "GET":
+        with open("templates/login.html") as login_loc:
+            login = login_loc.read()
+        return render_template_string(login)
+
+    elif request.method == "POST":
+        request.get_data()
+        data = parse_qs(request.data.decode("utf-8"))
+        user = root_db.get_user(data["user"][0])
+        if user is None:
+            return {"Status":"NOT OK"} 
+        else:
+            if user.validate_pass(data["pass"][0]):
+                root_db.save_user(user)
+                login_user(user)
+                return {"Status":"OK"}
+            else:
+                return {"Status":"NOT OK"}      
+
+
 
 @app.route('/')
+@login_required
 def landing():
-    print("GET landing")
     with open("templates/landing.html") as landing_loc:
         landing = landing_loc.read()
     return render_template_string(landing, twines=root_db.get_all_stories())
@@ -102,18 +124,8 @@ def admin(twine_id):
 # socket functions    #
 #######################
 
-@socketio.on("try_login")
-def try_login(login_event):
-    print("tried login")
-    #some logic here to get and validate the user
-    #and decide where to send them based on their status
-    #if the user isn't valid, kick them back to the login. 
-    #if the user is an admin or has multiple stories, send them to the landing page
-    #if the user has only one story, send them there
-
 
 def connect_socket(connect_event):
-    print("connecting socket")
     story_id = connect_event["story_id"]
     del connect_event["story_id"]
     all_clients = story_dbs[story_id].get_all_clients()
@@ -128,7 +140,6 @@ def connect_socket(connect_event):
         emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
 def nav_event(nav_event):
-    print("nav event")
     story_id = nav_event["story_id"]
     story_dbs[story_id].add_event(nav_event)
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
@@ -185,10 +196,5 @@ def setup():
         for story_id in twines:
             admin_user.twines.append({"story_id":story_id, "client_id":None, "admin":True})
         root_db.save_user(admin_user)
-    print(admin_user)
 
 setup()
-#socketio.run(app)
-
-#print("Setup Loom. Running...")
-#socketio.run(app)

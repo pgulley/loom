@@ -1,0 +1,29 @@
+h1{
+	border-bottom:2px solid black;
+}
+
+a.head_link{
+	color:black;
+}
+
+a.head_link :clicked{
+	color:black;
+}
+
+h2{
+	font-size: 20px;
+    padding-left: 10px;
+    border-bottom: 1px solid black;
+    display: block;
+}
+
+img.logo{
+	height:40px
+}
+
+.brand_header{
+	display:inline-block;
+	position:relative;
+	font-size:30px;
+	bottom:7px;
+}

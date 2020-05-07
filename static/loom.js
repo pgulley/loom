@@ -19,7 +19,8 @@ var loom = {
 	client_id : makeid(10),
 	client_obj: null,
 	current_passage : null,
-	clients_at_current_passage : []
+	clients_at_current_passage : [],
+	loaded: false
 }
 
 var color_picker = null
@@ -77,7 +78,6 @@ socket.on("clients_present", function(data){
 })
 
 socket.on("did_client_update", function(data){
-	console.log("got did_client_update")
 	loom.client_obj = data
 	update_current_client()
 })
@@ -101,8 +101,6 @@ function get_current_client_ui(){
 }
 
 function update_current_client(){
-	console.log("is this working?")
-	console.log(loom.client_obj)
 	$(".you").css("background-color",loom.client_obj.color)
 	$("#client_shortname")[0].innerHTML = get_shortname(loom.client_obj.username)
 	$("#client_uname")[0].innerHTML = loom.client_obj.username
@@ -158,11 +156,17 @@ function setup_loom_ui(){
 	else{
 		var color = loom.client_obj.color
 	}
-	var color_picker = new iro.ColorPicker("#color_picker",{
-		color:color,
-		width:100,
-		layoutDirection:'horizontal'
-	})
+	if(loom.loaded == false){
+		var color_picker = new iro.ColorPicker("#color_picker",{
+			color:color,
+			width:100,
+			layoutDirection:'horizontal'
+		})
+		loom.loaded = true
+	}
+	else{
+		var color_picker = $("#color_picker")
+	}
 	color_picker.on("input:end", function(color){
 		update_color(color.hexString)
 	})

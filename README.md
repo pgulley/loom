@@ -44,17 +44,16 @@ Find a live version [here](https://twine-loom-test.herokuapp.com/twine/twine) if
 - [X] Client-defined names and icons
 - [X] flexible configuration and deployment options 
 - [X] choose a better wsgi solution for non-dev deployments: using eventlet
-- [ ] ui polish pls and thx
+- [ ] Authentication / User Sessions 
+	- [X] basic universal login loop
+	- [ ] Story-scope permissions
 
 #### Down the road options
 
-- [ ] Authentication / User Sessions 
 - [ ] Web Interface to load new stories
 - [ ] Client to client chatting
 - [ ] More Admin interaction options
 - [ ] More Sugarcube Engine interactions (variables etc)
 - [ ] Extended API- ifttt? 
 
-#### Bugs
 
-None (that I know of) right now

@@ -14,11 +14,11 @@ class User():
 		self.twines = mongo_doc["twines"] 
 
 		self.is_authenticated = mongo_doc["is_authenticated"]
-		self.is_active = False #unnessecary for loom
+		self.is_active = True #unnessecary for loom
 		self.is_anonymous = False #unessecary for loom
 
 	def get_id(self):
-		return self.client_id
+		return self.user_id
 
 	def validate_pass(self, password):
 		self.is_authenticated = sha256_crypt.verify(password, self.pass_hash)
@@ -77,7 +77,18 @@ class RootCollection():
 			return False, self.get_user(username)
 
 	def get_user(self, username):
-		return User(self.users.find_one({"username":username}))
+		got = self.users.find_one({"username":username})
+		if got is not None:
+			return User(got)
+		else:
+			return None
+
+	def get_user_by_id(self, user_id):
+		got = self.users.find_one({"user_id":user_id})
+		if got is not None:
+			return User(got)
+		else:
+			return None
 
 	def save_user(self, User):
 		self.users.replace_one({"user_id":User.user_id}, User.to_doc())
