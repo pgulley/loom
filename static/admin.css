@@ -44,6 +44,8 @@ img.logo{
 
 .passages_table{
 	border-bottom:1px solid black;
+	padding-bottom:10px;
+	padding-left:10px;
 }
 
 .passages_header{
@@ -55,6 +57,18 @@ img.logo{
 .passages_graph_body{
 	position:relative;
 	top:-50;
+}
+
+.passages_settings_header{
+	border-top:1px solid black;
+	margin-top:10px;
+	padding-top:10px;
+	padding-left:10px;
+	font-weight:bold;
+}
+
+.passages_settings{
+	margin-left:20px;
 }
 
 .graph_link{
@@ -93,4 +107,5 @@ img.logo{
 .footer{
 	height:20px;
 	border-top:2px solid black;
+	margin-top:10px;
 }

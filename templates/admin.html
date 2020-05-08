@@ -4,7 +4,7 @@
 <script type="text/javascript" src="/static/socketio.js"></script>
 <script type="text/javascript" src="/static/lodash.js"></script>
 <script type="text/javascript" src="/static/jquery.connections.js"></script>
-<script type="text/javascript" src="/static/admin.js"></script>
+<script type="text/javascript" src="/static/admin.js"> </script>
 <link rel="stylesheet" type="text/css" href="/static/admin.css"> </style>
 <link rel='shortcut icon' type='image/x-icon' href='/static/favicon.ico' />
 <title> {{ twine.title }} | admin </title>
@@ -16,6 +16,19 @@
 	<div class="passages_table"> </div>
 	<div class="passages_header"> Story Graph </div>
 	<div class="passages_graph_body"> </div>
+	<div class="passages_settings_header"> Settings </div>
+	<div class="passages_settings"> 
+		Authorization Scheme </br>
+			<div id="auth_scheme_input">
+				<input type="radio" id="auth_none" name="auth" value="auth_none">
+				<label for="auth_none"> None</label><br>
+				<input type="radio" id="auth_login" name="auth" value="auth_login">
+				<label for="auth_login">Login Required</label><br>
+				<input type="radio" id="auth_invite" name="auth" value="auth">
+				<label for="auth_invite">Invite Only</label>
+			</div> 
+		</div>
+	</div>
 	<div class="footer"> </div>
 </body>
 

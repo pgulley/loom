@@ -5,6 +5,7 @@
 var loom_admin = {
 	setup:false,
 	story_id:document.URL.split("/")[4],
+	story_doc:null,
 	passages:null,
 	client_states:null,
 	clients_sorted:null,
@@ -88,29 +89,38 @@ function update_graph(){
 var socket = io(`/${loom_admin.story_id}`)
 socket.on('connect', function() {
 	socket.emit("get_story_structure", loom_admin.story_id)
-	socket.emit("get_client_locations", loom_admin.story_id)
 })
 
-socket.on("story_structure", function(structure){
-	loom_admin.passages = structure
+socket.on("story_structure", function(response){
+	loom_admin.passages = response["structure"]
+	loom_admin.story_doc = response["story"]
 	if(loom_admin.setup == false){
 		setup_table()
 		setup_graph()
+		$(`#auth_${loom_admin.story_doc["auth_scheme"]}`).prop("checked", true)
 		loom_admin.setup = true
+		socket.emit("get_client_locations", loom_admin.story_id)
 	}
 
 })
 
 socket.on("clients_present", function(clients){
-	loom_admin.client_states = clients
-	loom_admin.clients_sorted = loom_admin.passages.map(function(passage){
-		passage_id = passage.passage_id
-		passage_clients = loom_admin.client_states.filter(function(client){return client.event.passage_id==passage.passage_id})
-		return {id:passage_id, clients:passage_clients}
-	})
-	update_table()
-	update_graph()
+	if(loom_admin.setup){
+		loom_admin.client_states = clients
+		loom_admin.clients_sorted = loom_admin.passages.map(function(passage){
+			passage_id = passage.passage_id
+			passage_clients = loom_admin.client_states.filter(function(client){return client.event.passage_id==passage.passage_id})
+			return {id:passage_id, clients:passage_clients}
+		})
+		update_table()
+		update_graph()
+	}
 })
 
+
+$(document).on("change", "#auth_scheme_input", function(){
+	loom_admin.story_doc.auth_scheme = $("#auth_scheme_input input:checked")[0].id.split("_")[1]
+	socket.emit("update_story", loom_admin.story_doc)
+})
 
 

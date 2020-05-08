@@ -1,6 +1,5 @@
 #A rewrite of the database interfaces using mongodb
 from pymongo import MongoClient
-
 from passlib.hash import sha256_crypt
 import uuid
 
@@ -56,6 +55,9 @@ class RootCollection():
 
 	def get_story(self, story_id):
 		return clean_mongo_doc(self.stories.find_one({"story_id":story_id}))
+
+	def update_story(self, story_doc):
+		self.stories.replace_one({"story_id":story_doc["story_id"]}, story_doc)
 
 	def get_all_stories(self):
 		return [clean_mongo_doc(item) for item in self.stories.find()]

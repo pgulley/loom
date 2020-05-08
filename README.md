@@ -44,9 +44,28 @@ Find a live version [here](https://twine-loom-test.herokuapp.com/twine/twine) if
 - [X] Client-defined names and icons
 - [X] flexible configuration and deployment options 
 - [X] choose a better wsgi solution for non-dev deployments: using eventlet
+
+MVP is done and deployed!
+
+#### 0.2 checklist
+
 - [ ] Authentication / User Sessions 
 	- [X] basic universal login loop
-	- [ ] Story-scope permissions
+	- [ ] new user creation
+	- [X] Story-scope permissions
+	- [ ] Auth Schemes:
+		- [X] None Scheme (default)
+		- [X] Login Required scheme
+		- [ ] Invitation scheme
+
+- [ ] Chat features
+	- [ ] None Scheme 
+	- [ ] Echo Scheme
+	- [ ] Tweet Scheme
+
+- [ ] UI
+	- [ ] Admin reskin
+	- [ ] fontz
 
 #### Down the road options
 
@@ -55,5 +74,9 @@ Find a live version [here](https://twine-loom-test.herokuapp.com/twine/twine) if
 - [ ] More Admin interaction options
 - [ ] More Sugarcube Engine interactions (variables etc)
 - [ ] Extended API- ifttt? 
+
+#### 
+- [ ] Check out the loading bug
+
 
 

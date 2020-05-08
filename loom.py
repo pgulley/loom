@@ -35,6 +35,35 @@ def load_user(user_id):
     return user
 
 ######################
+
+def get_loomed_twine(twine_name):
+    with open("twines/{}.html".format(twine_name), "r") as twine_file:
+        twine = twine_file.read()
+
+    with open("static/loom.js", "r") as loom_js_file:
+        loom_js = loom_js_file.read()
+
+    with open("static/loom.css") as css:
+        loom_css = css.read()
+
+
+    socket_inject = "<script type='text/javascript' src='/static/socketio.js'></script>"
+    iro_inject = "<script type='text/javascript' src='/static/iro.js'></script>"
+    bootjs_inject = "<script type='text/javascript' src='/static/bootstrap.bundle.min.js'></script>"
+    bootcss_inject = "<link rel='stylesheet' type='text/css' href='/static/bootstrap.min.css'>"
+        
+    
+    loomed = twine.replace("{LOOM_JS}", loom_js)
+    loomed = loomed.replace("{LOOM_CSS}", loom_css)
+    loomed = bootcss_inject+loomed
+    loomed = socket_inject+loomed
+    loomed = iro_inject+loomed
+    loomed = loomed+bootjs_inject
+
+    return loomed
+
+
+######################
 # main server functs #
 ######################
 
@@ -66,7 +95,6 @@ def login():
                 return {"Status":"NOT OK"}      
 
 
-
 @app.route('/')
 @login_required
 def landing():
@@ -77,30 +105,16 @@ def landing():
 #Blunt but effective
 @app.route('/twine/<twine_name>')
 def serve_twine(twine_name):
-    with open("twines/{}.html".format(twine_name), "r") as twine_file:
-        twine = twine_file.read()
+    story = root_db.get_story(twine_name)
+    if story["auth_scheme"]=="login":
+        if current_user.is_authenticated:
+            return get_loomed_twine(twine_name)
+        else:
+            return redirect("/")
 
-    with open("static/loom.js", "r") as loom_js_file:
-        loom_js = loom_js_file.read()
-
-    with open("static/loom.css") as css:
-        loom_css = css.read()
-
-
-    socket_inject = "<script type='text/javascript' src='/static/socketio.js'></script>"
-    iro_inject = "<script type='text/javascript' src='/static/iro.js'></script>"
-    bootjs_inject = "<script type='text/javascript' src='/static/bootstrap.bundle.min.js'></script>"
-    bootcss_inject = "<link rel='stylesheet' type='text/css' href='/static/bootstrap.min.css'>"
-        
-    
-    loomed = twine.replace("{LOOM_JS}", loom_js)
-    loomed = loomed.replace("{LOOM_CSS}", loom_css)
-    loomed = bootcss_inject+loomed
-    loomed = socket_inject+loomed
-    loomed = iro_inject+loomed
-    loomed = loomed+bootjs_inject
-
-    return loomed
+    if story["auth_scheme"]=="none":
+        return get_loomed_twine(twine_name)
+    return redirect("/")
 
 @app.route("/log", methods=["POST"])
 def exit_event():
@@ -113,7 +127,9 @@ def exit_event():
     return "OK"
 
 @app.route('/twine/<twine_id>/admin')
+@login_required
 def admin(twine_id):
+    #not just login_required- also require explicit admin permisson on this story
     with open('templates/admin.html') as admin_loc:
         admin = admin_loc.read()
     twine = root_db.get_story(twine_id)
@@ -123,7 +139,6 @@ def admin(twine_id):
 #######################
 # socket functions    #
 #######################
-
 
 def connect_socket(connect_event):
     story_id = connect_event["story_id"]
@@ -146,8 +161,9 @@ def nav_event(nav_event):
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 def get_story_structure(story_id):
+    story = root_db.get_story(story_id)
     passages = story_dbs[story_id].get_all_passages()
-    emit("story_structure", passages, namespace="/{}".format(story_id))
+    emit("story_structure", {"structure":passages, "story":story}, namespace="/{}".format(story_id))
 
 def get_client_locations(story_id):
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
@@ -162,12 +178,17 @@ def update_client(client_update_doc):
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
+def update_story(story_update_doc):
+    root_db.update_story(story_update_doc)
+    emit("story_updated")
+
 all_socket_handlers = {
     "confirm_connected": connect_socket,
     "nav_event": nav_event,
     "get_story_structure": get_story_structure,
     "get_client_locations": get_client_locations,
-    "update_client":update_client
+    "update_client":update_client,
+    "update_story":update_story
 }
 
 #######################
@@ -186,7 +207,7 @@ def setup():
         #this setup should only happen once per twine per database instantiation 
         if story_id not in already_twines:
             twine_structure = process_twine.process("twines/{}.html", story_id)
-            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"]}
+            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none"}
             root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)

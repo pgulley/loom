@@ -15,7 +15,7 @@ function get_shortname(uname){
 }
 
 var loom = {
-	story_id: document.URL.split("/").last(),
+	story_id: document.URL.split("/").last().split("?")[0],
 	client_id : makeid(10),
 	client_obj: null,
 	current_passage : null,
