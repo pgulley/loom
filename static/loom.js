@@ -37,9 +37,10 @@ socket.on('connect', function() {
     	})
 });
 
-socket.on("client_connect_ok", function(data){
-	console.log("connected: "+data["username"])
-	loom.client_obj = data
+socket.on("client_connect_ok", function(user_doc){
+	console.log("connected: "+user_doc["username"])
+	loom.client_obj = user_doc
+	loom.client_id = user_doc["client_id"]
 	setup_loom_ui()
 })
 
@@ -69,12 +70,14 @@ $(window).on("beforeunload",function() {
 });
 
 socket.on("clients_present", function(data){
-	loom.clients_at_current_passage = data.filter(function(event){
-		return (event["event"]["passage_id"] == loom.current_passage) & (event["client"]["client_id"]!=loom.client_id )
- 	}).map(function(event){
- 		return event["client"]
- 	})
- 	update_other_clients()
+	if(loom.loaded){
+		loom.clients_at_current_passage = data.filter(function(event){
+			return (event["event"]["passage_id"] == loom.current_passage) & (event["client"]["client_id"]!=loom.client_id )
+	 	}).map(function(event){
+	 		return event["client"]
+	 	})
+	 	update_other_clients()
+	 }
 })
 
 socket.on("did_client_update", function(data){

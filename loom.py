@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, render_template_string, send_from_directory, redirect
 from flask_socketio import SocketIO, emit
-from flask_login import LoginManager, login_required, login_user, current_user
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from urllib.parse import parse_qs
 from pymongo import MongoClient
 import json
@@ -94,6 +94,11 @@ def login():
             else:
                 return {"Status":"NOT OK"}      
 
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect("/login")
+
 
 @app.route('/')
 @login_required
@@ -105,6 +110,8 @@ def landing():
 #Blunt but effective
 @app.route('/twine/<twine_name>')
 def serve_twine(twine_name):
+    if(twine_name.split(".")[-1]=="map"):
+        return "no", 404
     story = root_db.get_story(twine_name)
     if story["auth_scheme"]=="login":
         if current_user.is_authenticated:
@@ -129,11 +136,16 @@ def exit_event():
 @app.route('/twine/<twine_id>/admin')
 @login_required
 def admin(twine_id):
-    #not just login_required- also require explicit admin permisson on this story
-    with open('templates/admin.html') as admin_loc:
-        admin = admin_loc.read()
-    twine = root_db.get_story(twine_id)
-    return render_template_string(admin, twine=twine)
+    user_story_doc = list(filter(lambda doc:doc["story_id"]==twine_id, current_user.twines))[0]
+    if user_story_doc is not None and user_story_doc["admin"]:
+        with open('templates/admin.html') as admin_loc:
+            admin = admin_loc.read()
+        twine = root_db.get_story(twine_id)
+        return render_template_string(admin, twine=twine)
+    else:
+        return redirect("/")
+
+
 
 
 #######################
@@ -142,17 +154,49 @@ def admin(twine_id):
 
 def connect_socket(connect_event):
     story_id = connect_event["story_id"]
-    del connect_event["story_id"]
+    story = root_db.get_story(story_id)
     all_clients = story_dbs[story_id].get_all_clients()
-    if connect_event["client_id"] in [c["client_id"] for c in all_clients]:
-        client_doc = story_dbs[story_id].get_client(connect_event["client_id"])
-        emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
-    else:
-        username = get_random_username()
-        client_doc = {"client_id":connect_event["client_id"], "username":username}
-        story_dbs[story_id].add_client(client_doc)
-        del client_doc["_id"]
-        emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+
+    if story["auth_scheme"] == "login":
+        if(current_user.is_authenticated): #this should be a redundant clause but just in case...
+            
+            user_twines = {story["story_id"]:story for story in current_user.twines}
+            
+            #if this user already has an entry for this story and this client, just grab it and send it
+            if story_id in user_twines.keys() and user_twines[story_id]["client_id"] is not None:
+                    client_doc = story_dbs[story_id].get_client(user_twines[story_id]["client_id"])
+                    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+            else: 
+                if story_id in user_twines.keys():
+                    admin_val = user_twines[story_id]['admin']
+                else:
+                    admin_val = False
+
+                user_twine_doc = {
+                                    "story_id":story_id, 
+                                    "client_id":connect_event["client_id"], 
+                                    "admin":admin_val
+                }
+                current_user.twines.append(user_twine_doc)
+                root_db.save_user(current_user)
+                
+                username = get_random_username()
+                client_doc = {"client_id":connect_event["client_id"], "username":username, "user_id":current_user.user_id}
+                story_dbs[story_id].add_client(client_doc)
+                del client_doc["_id"]
+                emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+                    
+    elif story["auth_scheme"] == "none":
+        if connect_event["client_id"] in [c["client_id"] for c in all_clients]:
+            client_doc = story_dbs[story_id].get_client(connect_event["client_id"])
+            emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+        else:
+            username = get_random_username()
+            client_doc = {"client_id":connect_event["client_id"], "username":username}
+            story_dbs[story_id].add_client(client_doc)
+            del client_doc["_id"]
+            emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+
 
 def nav_event(nav_event):
     story_id = nav_event["story_id"]
@@ -217,5 +261,6 @@ def setup():
         for story_id in twines:
             admin_user.twines.append({"story_id":story_id, "client_id":None, "admin":True})
         root_db.save_user(admin_user)
+    #new, test_user = root_db.new_user("test", "test")
 
 setup()

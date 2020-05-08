@@ -10,7 +10,9 @@
 <title> {{ twine.title }} | admin </title>
 </head>
 <body>
-	<h1> <a class="head_link" href="/"> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div> </a></h1>
+	<h1> <a class="head_link" href="/"> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div> </a>
+		<div id="username">logged in as {{current_user.username}} | <a href="/logout"> logout </a></div>
+	</h1>
 	<h2> Admin for <div class="story_title"> {{ twine.title }} </div> </h2>
 	<div class="passages_header"> Connections Table </div>
 	<div class="passages_table"> </div>

@@ -41,8 +41,11 @@ class User():
 
 def clean_mongo_doc(doc):
 	#the mongo-internal object id is irrelevant
-	del doc["_id"]
-	return doc
+	if doc is None:
+		return doc
+	else:
+		del doc["_id"]
+		return doc
 
 class RootCollection():
 	def __init__(self, db):
@@ -117,9 +120,7 @@ class StoryCollection():
 		self.passages.insert_one(passage_doc)
 
 	def add_event(self, event_doc):
-		#print("adding event")
 		event_doc["story_id"] = self.story_id
-		#print(event_doc)
 		self.events.insert_one(event_doc)
 
 	def get_all_events(self):
@@ -127,7 +128,6 @@ class StoryCollection():
 
 	def get_all_clients(self):
 		as_list =  [clean_mongo_doc(item) for item in self.clients.find({"story_id":self.story_id})]
-		#print("all clients: ", as_list)
 		return as_list
 
 	def get_all_passages(self):
@@ -139,7 +139,6 @@ class StoryCollection():
 	def get_all_client_events(self, client_id):
 		all_client_events = self.events.find({"story_id": self.story_id, "client_id":client_id})
 		as_list = [clean_mongo_doc(item) for item in all_client_events]
-		#print("all client events: ", client_id, all_client_events)
 		return as_list
 
 	def get_current_client_location_event(self, client_id):
@@ -152,7 +151,7 @@ class StoryCollection():
 	def get_all_current_client_location_events(self):
 		all_current_events = [{"event": self.get_current_client_location_event(client["client_id"]), "client":client} 
 								for client in self.get_all_clients()]
-
+		
 		all_current_events = [event for event in all_current_events if event["event"] is not None]
 		#don't return exit events
 		return list(filter(lambda x: (x["event"]["passage_id"] != "event:exit"), all_current_events))

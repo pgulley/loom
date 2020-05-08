@@ -52,14 +52,15 @@ MVP is done and deployed!
 - [ ] Authentication / User Sessions 
 	- [X] basic universal login loop
 	- [ ] new user creation
-	- [X] Story-scope permissions
-	- [ ] Auth Schemes:
-		- [X] None Scheme (default)
-		- [X] Login Required scheme
-		- [ ] Invitation scheme
+	- [ ] Story-scope permissions
+		- [ ] 3 Auth Schemes:
+			- [X] None Scheme (default)
+			- [X] Login Required scheme
+				- [X] associate clients with users
+			- [ ] Invitation scheme
 
 - [ ] Chat features
-	- [ ] None Scheme 
+	- [X] None Scheme 
 	- [ ] Echo Scheme
 	- [ ] Tweet Scheme
 
@@ -76,7 +77,7 @@ MVP is done and deployed!
 - [ ] Extended API- ifttt? 
 
 #### 
-- [ ] Check out the loading bug
+- [X] Check out the loading bug
 
 
 

@@ -21,6 +21,14 @@ a.head_link :clicked{
 	bottom:7px;
 }
 
+#username{
+	display:inline-block;
+	float:right;
+	font-style:italic;
+	padding-right:10px;
+	font-size:20px;
+}
+
 .twine_entry{
 	margin-left: 10px;
 	margin-bottom:10px;

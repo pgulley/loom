@@ -10,6 +10,14 @@ a.head_link :clicked{
 	color:black;
 }
 
+#username{
+	display:inline-block;
+	float:right;
+	font-style:italic;
+	padding-right:10px;
+	font-size:20px;
+}
+
 h2{
 	font-size: 20px;
     padding-left: 10px;
