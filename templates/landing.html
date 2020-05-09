@@ -15,9 +15,10 @@
 
 	</h1>
 	<div class="twine list">
+		<h2> Stories </h2>
 		{% for twine in twines %}
 
-		<div class="twine_entry"> 
+		<div class="box_content twine_entry"> 
 			<h3>{{ twine.story.title }}</h3>
 			<a href="/twine/{{ twine.story.story_id }}"> play story </a> </br>
 			{% if twine.admin %}
@@ -26,19 +27,40 @@
 		</div>
 
 		{% endfor %}
-
-		{% if current_user.admin %}
-		<div class="new_user">
+	</div>
+	{% if current_user.admin %}
+	<div class="admin_content">
+		<h2> Admin </h2>
+		<div class="box_content new_user">
 			<h3> Create New Users </h3>
 			<label for="uname">Username</label>
 			<input type="text" id="uname" name="uname" value="">
 			<labl for="pword"> Password </labl>
 			<input type="password" id="pword" name="pword" value="">
-			<div id="login_errors"></div>
+			<div id="create_user_errors"></div>
 			<button id="submit"> Create </button>
 		</div>
-		{% endif %}
+		<div class="box_content">
+			<h3> User List </h3>
+			<table>
+				<tr>
+					<th> Username </th>
+					<th> Admin </th>
+				</tr>
+				<tbody id="user_table">
+				{% for user in users %}
+					<tr class="user" id='user_{{user.user_id}}'> 
+						<td> {{ user.username }} </td>
+						<td>{% if user.admin %} X {% endif %} </td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+
+		</div>
 	</div>
+	{% endif %}
+
 </body>
 
 </html>

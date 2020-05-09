@@ -123,7 +123,12 @@ def landing():
         else:
             view_twines.append( {"story":story, "admin":False} )
 
-    return render_template_string(landing, twines=view_twines)
+    if current_user.admin:
+        users = root_db.get_all_users()
+    else:
+        users = None
+
+    return render_template_string(landing, twines=view_twines, users = users)
 
 #Blunt but effective
 @app.route('/twine/<twine_name>')
@@ -173,9 +178,15 @@ def admin(twine_id):
 
 @socketio.on("create_user")
 def create_user(user_create_doc):
-    print(user_create_doc)
-    root_db.new_user(user_create_doc["uname"], user_create_doc["pass"])
-    emit("create_user_response")
+    all_users = [u.to_json() for u in root_db.get_all_users()]
+    if user_create_doc["uname"] in [doc["username"] for doc in all_users]:
+        emit("create_user_response", {"status":"ERROR", "error":"User already exists with that username"})
+    else:
+        root_db.new_user(user_create_doc["uname"], user_create_doc["pass"])
+        emit("create_user_response",{
+            "status":"OK", 
+            "users":[u.to_json() for u in root_db.get_all_users()]
+        })
 
 def connect_socket(connect_event):
     story_id = connect_event["story_id"]

@@ -36,6 +36,16 @@ class User():
 			"admin":self.admin,
 			"is_authenticated":self.is_authenticated,
 		}
+
+	#only returns information of interest to the browser
+	def to_json(self):
+		return {
+			"username":self.username,
+			"user_id":self.user_id,
+			"twines":self.twines,
+			"admin":self.admin,
+		}
+
 	def __repr__(self):
 		return str(self.to_doc())
 
@@ -91,11 +101,15 @@ class RootCollection():
 			return None
 
 	def get_user_by_id(self, user_id):
+		#this is just for the flask-login mixin
 		got = self.users.find_one({"user_id":user_id})
 		if got is not None:
 			return User(got)
 		else:
 			return None
+
+	def get_all_users(self):
+		return [User(doc) for doc in self.users.find()]
 
 	def save_user(self, User):
 		self.users.replace_one({"user_id":User.user_id}, User.to_doc())

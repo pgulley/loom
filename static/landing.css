@@ -29,26 +29,17 @@ a.head_link :clicked{
 	font-size:20px;
 }
 
+.box_content{
+	margin-left: 10px;
+	margin-bottom:10px;
+	font-size: 20px;
+	border: 2px solid black;
+	width: 40%;
+	padding-left: 10px;
+}
+
 .twine_entry{
-	margin-left: 10px;
-	margin-bottom:10px;
-	font-size: 20px;
-	border: 2px solid black;
-	width: 40%;
-	padding-left: 10px;
-}
 
-.new_user{
-	margin-left: 10px;
-	margin-bottom:10px;
-	font-size: 20px;
-	border: 2px solid black;
-	width: 40%;
-	padding-left: 10px;
-}
-
-h3{
-	margin-top:5px;
 }
 
 .twine_entry a{
@@ -61,4 +52,33 @@ h3{
 
 .twine_entry a :clicked{
 	color:black;
+}
+
+.admin_content{
+	border-top:1px solid black;
+	padding-top:10px;
+}
+
+.new_user{
+
+}
+
+.user_table{
+
+}
+
+h3{
+	margin-top:5px;
+}
+
+h2{
+	margin-left:10px;
+	margin-bottom:5px;
+}
+
+#create_user_errors{
+	font-size:15px;
+	font-style:italic;
+	color:red;
+
 }
