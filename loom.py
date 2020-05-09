@@ -261,7 +261,7 @@ def nav_event(nav_event):
 def get_story_structure(story_id):
     story = root_db.get_story(story_id)
     passages = story_dbs[story_id].get_all_passages()
-    emit("story_structure", {"structure":passages, "story":story}, namespace="/{}".format(story_id))
+    emit("story_structure", {"structure":passages, "story":story, "current_user":current_user.username}, namespace="/{}".format(story_id))
 
 def get_client_locations(story_id):
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
@@ -280,11 +280,91 @@ def update_story(story_update_doc):
     root_db.update_story(story_update_doc)
     emit("story_updated")
 
+#the complexity of this function could be obliterated by a more model oriented storage system
+def get_admin_clients(story_id):
+    #get_clients_doc: {story_id:"story_id"}
+    final_table = {} #this will be client_id :: client+user doc 
+    anon_count = 0 #count up an identifier for 
+
+    #step one is get all the users
+    all_users = [u.to_json() for u in root_db.get_all_users()]
+
+    #step two, we'll iterate over the users and transform them into one of three forms 
+    #(and add them to a final table, indexed by client id (or other!)) 
+    for user in all_users:
+        if story_id in [doc["story_id"] for doc in user['twines']]:
+            user_twines = {story["story_id"]:story for story in current_user.twines}
+            if user_twines[story_id]["client_id"] is not None:
+                client_key = user['twines'][story_id]["client_id"]
+                doc = {
+                    "user_id":user["user_id"], 
+                    "username":user["username"],
+                    "added_to_story":True,
+                    "loom_admin":user["admin"],
+                    "client_id":client_id,
+                    "story_admin":user_twine[story_id]["admin"]
+                    }
+            else:
+                client_key = anon_count
+                anon_count += 1
+                doc = {
+                    "user_id":user["user_id"], 
+                    "username":user["username"],
+                    "added_to_story":True,
+                    "client_id":None,
+                    "story_admin":False,
+                    "client_name":None,
+                    "location":None
+                    }
+        else:
+            client_key = anon_count
+            anon_count += 1
+            doc = {
+                "user_id":user["user_id"], 
+                "username":user["username"],
+                "loom_admin":user["admin"],
+                "added_to_story":False,
+                "client_id":None,
+                "story_admin":False,
+                "client_name":None,
+                "location":None
+                }
+        final_table[client_key] = doc
+
+    #Then, get all of the clients in the database for this story
+    #and, if there is already an entry matching that client_id, fill out the appropreate information 
+    #otherwise, just add a new doc to the final table
+
+    clients = [{"client":doc["client"], "loc":doc["event"]["passage_id"]} for doc in 
+                story_dbs[story_id].get_all_current_client_location_events(get_exited=True)]
+    for doc in clients:
+        client_id = doc["client"]["client_id"]
+        if client_id in final_table.keys():
+            existing_doc = final_table[client_id]
+            existing_doc["client_name"] = doc["client"]["username"]
+            existing_doc["location"] = doc["loc"]
+            final_table[client_id] = existing_doc
+        else:
+            doc = {
+                "user_id":None, 
+                "username":None,
+                "added_to_story":True,
+                "loom_admin":False,
+                "client_id":client_id,
+                "story_admin":False,
+                "client_name":doc["client"]["username"],
+                "location":doc["loc"]
+                }
+            final_table[client_id] = doc
+
+    emit("admin_clients", [doc for doc in final_table.values()])
+
 all_socket_handlers = {
     "confirm_connected": connect_socket,
     "nav_event": nav_event,
     "get_story_structure": get_story_structure,
     "get_client_locations": get_client_locations,
+    "get_admin_clients":get_admin_clients,
     "update_client":update_client,
     "update_story":update_story
 }

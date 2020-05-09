@@ -11,26 +11,60 @@
 </head>
 <body>
 	<h1> <a class="head_link" href="/"> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div> </a>
-		<div id="username">logged in as {{current_user.username}} | <a href="/logout"> logout </a></div>
+		<div id="username">logged in as <span id="logged_in_user">{{current_user.username}}</span> | <a href="/logout"> logout </a></div>
 	</h1>
-	<h2> Admin for <div class="story_title"> {{ twine.title }} </div> </h2>
-	<div class="passages_header"> Connections Table </div>
-	<div class="passages_table"> </div>
-	<div class="passages_header"> Story Graph </div>
-	<div class="passages_graph_body"> </div>
-	<div class="passages_settings_header"> Settings </div>
-	<div class="passages_settings"> 
-		Authorization Scheme </br>
-			<div id="auth_scheme_input">
-				<input type="radio" id="auth_none" name="auth" value="auth_none">
-				<label for="auth_none"> None</label><br>
-				<input type="radio" id="auth_login" name="auth" value="auth_login">
-				<label for="auth_login">Login Required</label><br>
-				<input type="radio" id="auth_invite" name="auth" value="auth">
-				<label for="auth_invite">Invite Only</label>
-			</div> 
+	<h2> Admin for <a href="/twine/{{twine.story_id}}">{{ twine.title }}</a> </h2>
+
+
+	<div class="admin_ui_unit"> 
+		<h3> Connections Table </h3>
+		<div class="passages_table"> </div>
+	</div>
+	<div class="admin_ui_unit">
+		<h3 class="passages_header"> Story Graph </h3>
+		<div class="passages_graph_body"> </div>
+	</div>
+	<div class="admin_ui_unit">
+		<h3> Settings </h3>
+		<div class="passages_settings"> 
+			Authorization Scheme </br>
+				<div id="auth_scheme_input">
+					<input type="radio" id="auth_none" name="auth" value="auth_none">
+					<label for="auth_none"> None</label><br>
+					<input type="radio" id="auth_login" name="auth" value="auth_login">
+					<label for="auth_login">Login Required</label><br>
+					<input type="radio" id="auth_invite" name="auth" value="auth">
+					<label for="auth_invite">Invite Only</label>
+				</div> 
+			</div>
 		</div>
 	</div>
+	<div class="admin_ui_unit">
+		<h3> Users </h3>
+		
+		<table class="users_table">
+			<tr>
+				<th>
+					Username
+				</th>
+				<th>
+					In Story
+				</th>
+				<th>
+					Client Name
+				</th>
+				<th>
+					Location
+				</th>
+				<th>
+					Story Admin
+				</th>
+			</tr>
+			<tbody id="users_table_body">
+			</tbody>
+		</table>
+	</div>
+
 	<div class="footer"> </div>
 </body>
 

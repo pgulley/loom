@@ -9,8 +9,13 @@ var loom_admin = {
 	passages:null,
 	client_states:null,
 	clients_sorted:null,
+	logged_in_user:null,
 	graph_x_pos: []
 }
+
+$.ready(function(){
+	loom_admin.logged_in_user = $("#logged_in_user")[0].innerHTML
+}) 
 
 function setup_table(){
 	table_rows = loom_admin.passages.map(function(passage){
@@ -52,6 +57,35 @@ function update_table(){
 	})
 }
 
+function render_users_table(user_list){
+	user_rows = user_list.map(function(user){
+		return `<tr>
+			<td>
+				${(user.username ? user.username : "")}
+			</td>
+			<td>
+				<input type="checkbox" value="${user.username}" class="added_toggle" 
+				${(user.added_to_story ? "checked":"")} 
+				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
+				${(user.admin ? "disabled checked" :"")} >
+			</td>
+			<td>
+				${(user.client_name ? user.client_name : "")}
+			</td>
+			<td>
+				${(user.location ? user.location : "")}
+			</td>
+			<td>
+				<input type="checkbox" value="${user.username}" class="admin_toggle" 
+				${(user.story_admin ? "checked":"")} 
+				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
+				${(user.admin ? "disabled" :"")} >
+			</td>
+		</tr>
+		`
+	}).join('')
+	$("#users_table_body")[0].innerHTML = user_rows
+}
 
 function get_passage_graph_node(passage){
 	var position = passage.position.split(",")
@@ -94,12 +128,14 @@ socket.on('connect', function() {
 socket.on("story_structure", function(response){
 	loom_admin.passages = response["structure"]
 	loom_admin.story_doc = response["story"]
+	loom_admin.logged_in_user = response["current_user"]
 	if(loom_admin.setup == false){
 		setup_table()
 		setup_graph()
 		$(`#auth_${loom_admin.story_doc["auth_scheme"]}`).prop("checked", true)
 		loom_admin.setup = true
 		socket.emit("get_client_locations", loom_admin.story_id)
+		socket.emit("get_admin_clients", loom_admin.story_id)
 	}
 
 })
@@ -117,6 +153,10 @@ socket.on("clients_present", function(clients){
 	}
 })
 
+socket.on("admin_clients", function(clients){
+	console.log("got clients")
+	render_users_table(clients)
+})
 
 $(document).on("change", "#auth_scheme_input", function(){
 	loom_admin.story_doc.auth_scheme = $("#auth_scheme_input input:checked")[0].id.split("_")[1]

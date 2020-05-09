@@ -2,11 +2,15 @@ h1{
 	border-bottom:2px solid black;
 }
 
-a.head_link{
+a {
 	color:black;
 }
 
-a.head_link :clicked{
+a :hover{
+	color:grey;
+}
+
+a :clicked{
 	color:black;
 }
 
@@ -36,7 +40,7 @@ img.logo{
 	bottom:7px;
 }
 
-.story_title{
+h2.a{
 	display:inline-block;
 	font-style:italic;
 }
@@ -50,13 +54,13 @@ img.logo{
 	margin-right:3px;
 }
 
-.passages_table{
+.admin_ui_unit{
 	border-bottom:1px solid black;
 	padding-bottom:10px;
 	padding-left:10px;
 }
 
-.passages_header{
+h3{
 	margin-top:10px;
 	padding-left:10px;
 	font-weight:bold;

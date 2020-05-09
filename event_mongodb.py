@@ -164,10 +164,13 @@ class StoryCollection():
 		else:
 			return None
 
-	def get_all_current_client_location_events(self):
+	def get_all_current_client_location_events(self, get_exited=False):
 		all_current_events = [{"event": self.get_current_client_location_event(client["client_id"]), "client":client} 
 								for client in self.get_all_clients()]
 		
 		all_current_events = [event for event in all_current_events if event["event"] is not None]
-		#don't return exit events
-		return list(filter(lambda x: (x["event"]["passage_id"] != "event:exit"), all_current_events))
+		
+		if get_exited:
+			return all_current_events
+		else:
+			return list(filter(lambda x: (x["event"]["passage_id"] != "event:exit"), all_current_events))
