@@ -10,6 +10,10 @@ from event_mongodb import RootCollection, StoryCollection
 from random_username import get_random_username
 import process_twine
 
+#####################
+# environment setup #
+#####################
+
 app = Flask("LOOM")
 app.config['SECRET_KEY'] = os.environ["SOCKET_SECRET"]
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -34,7 +38,9 @@ def load_user(user_id):
     user = root_db.get_user_by_id(user_id)
     return user
 
-######################
+###################################
+# prepare a story for the browser #
+###################################
 
 def get_loomed_twine(twine_name):
     with open("twines/{}.html".format(twine_name), "r") as twine_file:
@@ -172,9 +178,11 @@ def admin(twine_id):
 
 
 #######################
-# socket functions    #
+# socketio functions  #
 #######################
 
+####################
+## site-wide sockets
 
 @socketio.on("create_user")
 def create_user(user_create_doc):
@@ -187,6 +195,16 @@ def create_user(user_create_doc):
             "status":"OK", 
             "users":[u.to_json() for u in root_db.get_all_users()]
         })
+
+@socketio.on("user_admin_toggle")
+def user_admin_toggle(event):
+    user = root_db.get_user(event["user"])
+    user.admin = event["admin"]
+    root_db.save_user(user)
+    emit("user_admin_toggle_response")
+
+######################
+## story-bound sockets
 
 def connect_socket(connect_event):
     story_id = connect_event["story_id"]
@@ -271,7 +289,9 @@ all_socket_handlers = {
     "update_story":update_story
 }
 
-#######################
+##############
+# data setup #
+##############
 
 def setup():
     print("Setting up")
