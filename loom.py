@@ -105,7 +105,25 @@ def logout():
 def landing():
     with open("templates/landing.html") as landing_loc:
         landing = landing_loc.read()
-    return render_template_string(landing, twines=root_db.get_all_stories())
+
+    user_twines = {story["story_id"]:story for story in current_user.twines}
+    all_twines = root_db.get_all_stories()
+    view_twines = []
+
+    for story in all_twines:
+        if current_user.admin:
+            view_twines.append( {"story":story, "admin":True} )
+        elif story["story_id"] in user_twines.keys():
+            if user_twines[story["story_id"]].admin:
+                view_twines.append( {"story":story, "admin":True} )
+            else:
+                view_twines.append( {"story":story, "admin":False} )
+        #Another clause should prevent stories that a user hasn't been added to from appearing at all
+        #but let's make the loop to add users to stories first.
+        else:
+            view_twines.append( {"story":story, "admin":False} )
+
+    return render_template_string(landing, twines=view_twines)
 
 #Blunt but effective
 @app.route('/twine/<twine_name>')
@@ -151,6 +169,13 @@ def admin(twine_id):
 #######################
 # socket functions    #
 #######################
+
+
+@socketio.on("create_user")
+def create_user(user_create_doc):
+    print(user_create_doc)
+    root_db.new_user(user_create_doc["uname"], user_create_doc["pass"])
+    emit("create_user_response")
 
 def connect_socket(connect_event):
     story_id = connect_event["story_id"]
@@ -256,11 +281,11 @@ def setup():
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)
     print("finished story setup")
-    new, admin_user = root_db.new_user("admin", os.environ["ADMIN_PASS"])
+    new, admin_user = root_db.new_user("admin", os.environ["ADMIN_PASS"], admin=True)
     if new:
         for story_id in twines:
             admin_user.twines.append({"story_id":story_id, "client_id":None, "admin":True})
         root_db.save_user(admin_user)
-    #new, test_user = root_db.new_user("test", "test")
+    new, test_user = root_db.new_user("test", "test")
 
 setup()

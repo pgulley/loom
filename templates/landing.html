@@ -1,6 +1,9 @@
 <html>
 <head>
 <title> Loom </title>
+<script type="text/javascript" src="/static/jquery.min.js"></script>
+<script type="text/javascript" src="/static/socketio.js"></script>
+<script type="text/javascript" src="/static/landing.js"> </script>
 <link rel='shortcut icon' type='image/x-icon' href='/static/favicon.ico' />
 <link rel="stylesheet" type="text/css" href="/static/landing.css"> </style>
 </head>
@@ -15,12 +18,26 @@
 		{% for twine in twines %}
 
 		<div class="twine_entry"> 
-			<h3>{{ twine.title }}</h3>
-			<a href="/twine/{{ twine.story_id }}"> play story </a> </br>
-			<a class="admin_link" href="/twine/{{ twine.story_id }}/admin"> admin view </a>
+			<h3>{{ twine.story.title }}</h3>
+			<a href="/twine/{{ twine.story.story_id }}"> play story </a> </br>
+			{% if twine.admin %}
+			<a class="admin_link" href="/twine/{{ twine.story.story_id }}/admin"> admin view </a>
+			{% endif %}
 		</div>
 
 		{% endfor %}
+
+		{% if current_user.admin %}
+		<div class="new_user">
+			<h3> Create New Users </h3>
+			<label for="uname">Username</label>
+			<input type="text" id="uname" name="uname" value="">
+			<labl for="pword"> Password </labl>
+			<input type="password" id="pword" name="pword" value="">
+			<div id="login_errors"></div>
+			<button id="submit"> Create </button>
+		</div>
+		{% endif %}
 	</div>
 </body>
 

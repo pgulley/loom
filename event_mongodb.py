@@ -8,7 +8,7 @@ class User():
 		self.user_id = mongo_doc["user_id"]
 		self.pass_hash = mongo_doc["pass_hash"]
 		self.username = mongo_doc["username"]
-
+		self.admin = mongo_doc["admin"]
 		#[{twine_story_id:str, client_id:str, admin:bool},...]
 		self.twines = mongo_doc["twines"] 
 
@@ -33,6 +33,7 @@ class User():
 			"pass_hash":self.pass_hash,
 			"user_id":self.user_id,
 			"twines":self.twines,
+			"admin":self.admin,
 			"is_authenticated":self.is_authenticated,
 		}
 	def __repr__(self):
@@ -65,12 +66,13 @@ class RootCollection():
 	def get_all_stories(self):
 		return [clean_mongo_doc(item) for item in self.stories.find()]
 
-	def new_user(self, username, password):
+	def new_user(self, username, password, admin=False):
 		doc = {
 			"username":username,
 			"pass_hash":sha256_crypt.encrypt(password),
 			"user_id":str(uuid.uuid4()),
 			"twines":[],
+			"admin":admin,
 			"is_authenticated":False
 		}
 		#check if username exists in db yet

@@ -38,6 +38,15 @@ a.head_link :clicked{
 	padding-left: 10px;
 }
 
+.new_user{
+	margin-left: 10px;
+	margin-bottom:10px;
+	font-size: 20px;
+	border: 2px solid black;
+	width: 40%;
+	padding-left: 10px;
+}
+
 h3{
 	margin-top:5px;
 }
