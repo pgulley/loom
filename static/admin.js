@@ -8,16 +8,18 @@ var loom_admin = {
 	story_doc:null,
 	passages:null,
 	client_states:null,
-	clients_sorted:null,
+	clients_by_passage:null,
 	logged_in_user:null,
-	graph_x_pos: []
+	graph_extrema: []
 }
 
 $.ready(function(){
 	loom_admin.logged_in_user = $("#logged_in_user")[0].innerHTML
 }) 
 
-function setup_table(){
+//rendering!
+
+function setup_passage_table(){
 	table_rows = loom_admin.passages.map(function(passage){
 		return `<tr id="${passage.passage_id}">
 			<td class="passage_title"> ${passage.title} </td>
@@ -38,14 +40,61 @@ function setup_table(){
 		`)
 }
 
-function update_table(){
-	console.log("Updating Table")
+function update_tables(){
+	//Updates both the passages table and the user table whenever we recieve an update event
+
+	//need to add some logic here to square the clients against the users.
+	//just cause new users might show up, and the users table was generated already
+	user_client_ids = loom_admin.users.map(function(u){return u.client_id})
+	client_id_list = loom_admin.client_states.map(function(c){
+
+		//if the client's info isn't already in the user table....
+		if(!(user_client_ids.includes(c.client.client_id))){
+			//a new client has joined the room- add them to the users table
+			//this client might belong to an existing user... check that.
+			if(c.client.user_id != undefined){
+				$(`#${c.client.user_id}`).parent().attr("id", c.client.client_id)				
+				//update that users existing entry in the table
+			}else{
+				//add the client to the usertable with no user info
+				$("#users_table_body").append(`<tr id="${c.client.client_id}">
+					<td></td>
+					<td>
+						<input type="checkbox" value="null" class="added_toggle" checked >
+					</td>
+					<td class="client_name">${c.client.username}</td>
+					<td class="location">
+					</td>
+					<td>
+						<input type="checkbox" value="null" class="admin_toggle" >
+					</td>
+				</tr>`)
+			}
+			loom_admin.users.push({client_id:c.client.client_id})
+		}
+
+		//always update the client username too
+		$(`#${c.client.client_id} .client_name`)[0].innerHTML = c.client.username
+		return c.client.client_id
+	})
+
+//	user_client_ids.map(function(u){
+//		if(!client_id_list.includes(u)){
+//			$(`#${u} .location`)[0].innerHTML = "event:exit"
+//		}
+//	})
+	//We'll need one loop through the user list as well, to mark any exited users properly
+
+
 	loom_admin.passages.map(function(passage){
-		passage_info = loom_admin.clients_sorted.filter(function(item){return item.id == passage.passage_id})[0]
+		passage_info = loom_admin.clients_by_passage.filter(function(item){return item.id == passage.passage_id})[0]
 		var num_query = `#${ passage.passage_id } .num_connected`
 		var clients_query = `#${ passage.passage_id } .client_names`
 		if(passage_info.clients.length > 0){
-			var clients = passage_info.clients.map(function(c){return c.client.username})
+			var clients = passage_info.clients.map(function(c){
+				$(`#${c.client.client_id} .location`)[0].innerHTML = passage.name	
+				return c.client.username
+			})
 			$(num_query)[0].innerHTML = passage_info.clients.length
 			$(clients_query)[0].innerHTML = clients
 		}
@@ -57,10 +106,10 @@ function update_table(){
 	})
 }
 
-function render_users_table(user_list){
+function setup_users_table(user_list){
 	user_rows = user_list.map(function(user){
-		return `<tr>
-			<td>
+		return `<tr id="${user.client_id}">
+			<td id="${user.user_id}">
 				${(user.username ? user.username : "")}
 			</td>
 			<td>
@@ -69,10 +118,10 @@ function render_users_table(user_list){
 				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
 				${(user.admin ? "disabled checked" :"")} >
 			</td>
-			<td>
+			<td class="client_name">
 				${(user.client_name ? user.client_name : "")}
 			</td>
-			<td>
+			<td class="location">
 				${(user.location ? user.location : "")}
 			</td>
 			<td>
@@ -87,29 +136,33 @@ function render_users_table(user_list){
 	$("#users_table_body")[0].innerHTML = user_rows
 }
 
-function get_passage_graph_node(passage){
-	var position = passage.position.split(",")
-	loom_admin.graph_x_pos.push(position[1])
-	return `<div class="passage_node" id="node-${passage.passage_id}" style="left:${position[0]}; top:${position[1]}"> <div class="node_badge"></div> ${passage.title} </div>`
-}
-
-function setup_graph(){
-	var nodes = loom_admin.passages.map(function(p){return get_passage_graph_node(p)})
-	$(".passages_graph_body")[0].innerHTML = nodes.join("")
+function setup_passage_graph(){
+	//Generate the graph nodes
+	var nodes = loom_admin.passages.map(function(passage){
+		var position = passage.position.split(",")
+		loom_admin.graph_extrema.push(position[1])
+		return `<div class="passage_node" id="node-${passage.passage_id}" style="left:${position[0]}; top:${position[1]}"> 
+					<div class="node_badge"></div> 
+					${passage.title} 
+				</div>`
+	}).join("")
+	$(".passages_graph_body")[0].innerHTML = nodes
+	//Generate the graph edges
 	loom_admin.passages.map(function(p){
 		p.link_ids.map(function(i){
 			$(`#node-${p.passage_id}`).connections({to:`#node-${i}`, class:"graph_link"})
 		})
 	})
-	var xmin = Math.min.apply(null, loom_admin.graph_x_pos)
-	var xmax = Math.max.apply(null, loom_admin.graph_x_pos)
+	//Set the canvas size
+	var xmin = Math.min.apply(null, loom_admin.graph_extrema)
+	var xmax = Math.max.apply(null, loom_admin.graph_extrema)
 	var xspan = xmax-xmin
 	$(".passages_graph_body").height(xspan+200) 
 }
 
-function update_graph(){
+function update_passage_graph(){
 	loom_admin.passages.map(function(p){
-		passage_info = loom_admin.clients_sorted.filter(function(item){return item.id == p.passage_id})[0]
+		passage_info = loom_admin.clients_by_passage.filter(function(item){return item.id == p.passage_id})[0]
 		num_connected = passage_info.clients.length
 		if(num_connected > 0){
 			$(`#node-${p.passage_id} .node_badge`).css("display", "inline-block")
@@ -119,6 +172,8 @@ function update_graph(){
 		}
 	})
 }
+
+//Sockets!	
 
 var socket = io(`/${loom_admin.story_id}`)
 socket.on('connect', function() {
@@ -130,32 +185,32 @@ socket.on("story_structure", function(response){
 	loom_admin.story_doc = response["story"]
 	loom_admin.logged_in_user = response["current_user"]
 	if(loom_admin.setup == false){
-		setup_table()
-		setup_graph()
+		setup_passage_table()
+		setup_passage_graph()
 		$(`#auth_${loom_admin.story_doc["auth_scheme"]}`).prop("checked", true)
-		loom_admin.setup = true
-		socket.emit("get_client_locations", loom_admin.story_id)
 		socket.emit("get_admin_clients", loom_admin.story_id)
 	}
 
 })
 
+socket.on("admin_clients", function(clients){
+	loom_admin.users = clients
+	setup_users_table(clients)
+	loom_admin.setup = true
+	socket.emit("get_client_locations", loom_admin.story_id)
+})
+
 socket.on("clients_present", function(clients){
-	if(loom_admin.setup){
+	if(loom_admin.setup){ //wait for render to finish
 		loom_admin.client_states = clients
-		loom_admin.clients_sorted = loom_admin.passages.map(function(passage){
+		loom_admin.clients_by_passage = loom_admin.passages.map(function(passage){
 			passage_id = passage.passage_id
 			passage_clients = loom_admin.client_states.filter(function(client){return client.event.passage_id==passage.passage_id})
 			return {id:passage_id, clients:passage_clients}
 		})
-		update_table()
-		update_graph()
+		update_tables()
+		update_passage_graph()
 	}
-})
-
-socket.on("admin_clients", function(clients){
-	console.log("got clients")
-	render_users_table(clients)
 })
 
 $(document).on("change", "#auth_scheme_input", function(){
