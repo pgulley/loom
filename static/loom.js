@@ -31,7 +31,7 @@ socket.on('connect', function() {
     socket.emit('confirm_connected', 
     	{
     		"story_id": loom.story_id,
-    		"passage_id":"event:enter",
+    		"passage_id":SugarCube.Story.get(SugarCube.State.passage).domId,
            	"client_id":loom.client_id, 
     		"time":Date.now()
     	})

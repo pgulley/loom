@@ -78,12 +78,13 @@ function update_tables(){
 		return c.client.client_id
 	})
 
-//	user_client_ids.map(function(u){
-//		if(!client_id_list.includes(u)){
-//			$(`#${u} .location`)[0].innerHTML = "event:exit"
-//		}
-//	})
 	//We'll need one loop through the user list as well, to mark any exited users properly
+	user_client_ids.map(function(u){
+		if(!client_id_list.includes(u)){
+			$(`#${u} .location`)[0].innerHTML = "event:exit"
+			$(`#${u}`).addClass("exit")
+		}
+	})
 
 
 	loom_admin.passages.map(function(passage){
@@ -93,6 +94,9 @@ function update_tables(){
 		if(passage_info.clients.length > 0){
 			var clients = passage_info.clients.map(function(c){
 				$(`#${c.client.client_id} .location`)[0].innerHTML = passage.name	
+				if(passage.name != "event:exit"){
+					$(`#${c.client.client_id}`).removeClass("exit")
+				}
 				return c.client.username
 			})
 			$(num_query)[0].innerHTML = passage_info.clients.length
@@ -108,7 +112,7 @@ function update_tables(){
 
 function setup_users_table(user_list){
 	user_rows = user_list.map(function(user){
-		return `<tr id="${user.client_id}">
+		return `<tr id="${user.client_id}" ${(user.location=="event:exit" ? "exit":"")}>
 			<td id="${user.user_id}">
 				${(user.username ? user.username : "")}
 			</td>

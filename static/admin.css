@@ -45,13 +45,22 @@ h2.a{
 	font-style:italic;
 }
 
-.twine_table tr{
+tr{
 	border-bottom:2px solid black;
 }
 
-.twine_table td{
+tr.exit{
+	color:grey;
+}
+
+td{
 	border-right:2px solid grey;
 	margin-right:3px;
+}
+
+th{
+	padding-left:10px;
+	padding-right:10px;
 }
 
 .admin_ui_unit{

@@ -123,7 +123,7 @@ def landing():
         if current_user.admin:
             view_twines.append( {"story":story, "admin":True} )
         elif story["story_id"] in user_twines.keys():
-            if user_twines[story["story_id"]].admin:
+            if user_twines[story["story_id"]]["admin"]:
                 view_twines.append( {"story":story, "admin":True} )
             else:
                 view_twines.append( {"story":story, "admin":False} )
@@ -206,6 +206,8 @@ def user_admin_toggle(event):
     root_db.save_user(user)
     emit("user_admin_toggle_response")
 
+
+
 ######################
 ## story-bound sockets
 
@@ -213,20 +215,17 @@ def connect_socket(connect_event):
     story_id = connect_event["story_id"]
     story = root_db.get_story(story_id)
     all_clients = story_dbs[story_id].get_all_clients()
-    pp.pprint(current_user)
-
+    
     if story["auth_scheme"] == "login":
         if(current_user.is_authenticated): #this should be a redundant clause but just in case...
             
             user_twines = {story["story_id"]:story for story in current_user.twines}
-            print("an authenticated user connected to a story")
             #if this user already has an entry for this story and this client, just grab it and send it
             if story_id in user_twines.keys() and user_twines[story_id]["client_id"] is not None:
-                print("the user already had a client doc")
+                connect_event["client_id"] = user_twines[story_id]["client_id"]
                 client_doc = story_dbs[story_id].get_client(user_twines[story_id]["client_id"])
                 emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
             else: 
-                print("the user did not already have a client doc")
                 if story_id in user_twines.keys():
                     admin_val = user_twines[story_id]['admin']
                 else:
@@ -243,7 +242,6 @@ def connect_socket(connect_event):
                     [i for i in filter(lambda x:x["story_id"]==story_id, current_user.twines)][0]["client_id"]=connect_event["client_id"]
                 else:
                     current_user.twines.append(user_twine_doc)
-                pp.pprint("after update ", current_user)
                 root_db.save_user(current_user)
 
                 username = get_random_username()
@@ -260,6 +258,7 @@ def connect_socket(connect_event):
             
             #if this user already has an entry for this story and this client, just grab it and send it
             if story_id in user_twines.keys() and user_twines[story_id]["client_id"] is not None:
+                    connect_event["client_id"] = user_twines[story_id]["client_id"]
                     client_doc = story_dbs[story_id].get_client(user_twines[story_id]["client_id"])
                     emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
             else: 
@@ -294,6 +293,7 @@ def connect_socket(connect_event):
                 story_dbs[story_id].add_client(client_doc)
                 del client_doc["_id"]
                 emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+
     if story["auth_scheme"] == "invite":
         if connect_event["client_id"] in [c["client_id"] for c in all_clients]:
             client_doc = story_dbs[story_id].get_client(connect_event["client_id"])
@@ -304,6 +304,12 @@ def connect_socket(connect_event):
             story_dbs[story_id].add_client(client_doc)
             del client_doc["_id"]
             emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+
+    print("WHY")
+    story_dbs[story_id].add_event(connect_event)
+    client_locations = story_dbs[story_id].get_all_current_client_location_events()
+    print(client_locations)
+    emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 
 def nav_event(nav_event):
@@ -409,8 +415,11 @@ def get_admin_clients(story_id):
                 "location":doc["loc"]
                 }
             final_table[client_id] = doc
-    pp.pprint(final_table)
     emit("admin_clients", [doc for doc in final_table.values()])
+
+##client admin toggle
+
+##user story toggle
 
 all_socket_handlers = {
     "confirm_connected": connect_socket,
