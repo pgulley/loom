@@ -305,10 +305,8 @@ def connect_socket(connect_event):
             del client_doc["_id"]
             emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
-    print("WHY")
     story_dbs[story_id].add_event(connect_event)
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
-    print(client_locations)
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
 
@@ -417,7 +415,13 @@ def get_admin_clients(story_id):
             final_table[client_id] = doc
     emit("admin_clients", [doc for doc in final_table.values()])
 
-##client admin toggle
+def client_admin_toggle(event):
+    client = story_dbs[event["story_id"]].get_client(event["client_id"])
+    user = root_db.get_user_by_id(client["user_id"])
+    twine = [i for i in filter(lambda x:x["client_id"] == client["client_id"], user.twines)][0]
+    twine["admin"] = event["admin"]
+    root_db.save_user(user)
+    emit("client_admin_toggle_response")
 
 ##user story toggle
 
@@ -428,7 +432,8 @@ all_socket_handlers = {
     "get_client_locations": get_client_locations,
     "get_admin_clients":get_admin_clients,
     "update_client":update_client,
-    "update_story":update_story
+    "update_story":update_story,
+    "client_admin_toggle":client_admin_toggle
 }
 
 ##############

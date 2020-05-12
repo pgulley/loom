@@ -120,7 +120,7 @@ function setup_users_table(user_list){
 				<input type="checkbox" value="${user.username}" class="added_toggle" 
 				${(user.added_to_story ? "checked":"")} 
 				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
-				${(user.admin ? "disabled checked" :"")} >
+				${(user.loom_admin ? "disabled checked" :"")} >
 			</td>
 			<td class="client_name">
 				${(user.client_name ? user.client_name : "")}
@@ -129,10 +129,10 @@ function setup_users_table(user_list){
 				${(user.location ? user.location : "")}
 			</td>
 			<td>
-				<input type="checkbox" value="${user.username}" class="admin_toggle" 
+				<input type="checkbox" value="${user.client_id}" class="admin_toggle" 
 				${(user.story_admin ? "checked":"")} 
 				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
-				${(user.admin ? "disabled" :"")} >
+				${(user.loom_admin ? "checked disabled" :"")} >
 			</td>
 		</tr>
 		`
@@ -220,6 +220,10 @@ socket.on("clients_present", function(clients){
 $(document).on("change", "#auth_scheme_input", function(){
 	loom_admin.story_doc.auth_scheme = $("#auth_scheme_input input:checked")[0].id.split("_")[1]
 	socket.emit("update_story", loom_admin.story_doc)
+})
+
+$(document).on("change", ".admin_toggle", function(){
+	socket.emit("client_admin_toggle", {story_id:loom_admin.story_id, client_id:$(this).val(), admin:$(this).is(":checked")})
 })
 
 
