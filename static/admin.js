@@ -117,7 +117,7 @@ function setup_users_table(user_list){
 				${(user.username ? user.username : "")}
 			</td>
 			<td>
-				<input type="checkbox" value="${user.username}" class="added_toggle" 
+				<input type="checkbox" value="${user.user_id}" class="added_toggle" 
 				${(user.added_to_story ? "checked":"")} 
 				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
 				${(user.loom_admin ? "disabled checked" :"")} >
@@ -132,7 +132,8 @@ function setup_users_table(user_list){
 				<input type="checkbox" value="${user.client_id}" class="admin_toggle" 
 				${(user.story_admin ? "checked":"")} 
 				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
-				${(user.loom_admin ? "checked disabled" :"")} >
+				${(user.loom_admin ? "checked disabled" :"")} 
+				${(user.add_to_story ? "" : "disabled")}>
 			</td>
 		</tr>
 		`
@@ -226,4 +227,7 @@ $(document).on("change", ".admin_toggle", function(){
 	socket.emit("client_admin_toggle", {story_id:loom_admin.story_id, client_id:$(this).val(), admin:$(this).is(":checked")})
 })
 
+$(document).on("change", ".added_toggle", function(){
+	socket.emit("client_added_toggle", {story_id:loom_admin.story_id, user_id:$(this).val(), added:$(this).is(":checked")})
+})
 

@@ -150,9 +150,12 @@ def serve_twine(twine_name):
             return get_loomed_twine(twine_name)
         else:
             return redirect("/")
-
     if story["auth_scheme"]=="none":
         return get_loomed_twine(twine_name)
+    if story["auth_scheme"]=="invite":
+        user_twines = [story["story_id"] for story in current_user.twines]
+        if twine_name in user_twines:
+            return get_loomed_twine(twine_name)
     return redirect("/")
 
 @app.route("/log", methods=["POST"])
@@ -295,15 +298,34 @@ def connect_socket(connect_event):
                 emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
     if story["auth_scheme"] == "invite":
-        if connect_event["client_id"] in [c["client_id"] for c in all_clients]:
-            client_doc = story_dbs[story_id].get_client(connect_event["client_id"])
-            emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
-        else:
-            username = get_random_username()
-            client_doc = {"client_id":connect_event["client_id"], "username":username}
-            story_dbs[story_id].add_client(client_doc)
-            del client_doc["_id"]
-            emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+        if(current_user.is_authenticated): #this should be a redundant clause but just in case...
+            
+            user_twines = {story["story_id"]:story for story in current_user.twines}
+            #if this user already has an entry for this story and this client, just grab it and send it
+            if story_id in user_twines.keys():
+                if user_twines[story_id]["client_id"] is not None:
+                    connect_event["client_id"] = user_twines[story_id]["client_id"]
+                    client_doc = story_dbs[story_id].get_client(user_twines[story_id]["client_id"])
+                    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+                else:
+                    user_twine_doc = {
+                                        "story_id":story_id, 
+                                        "client_id":connect_event["client_id"], 
+                                        "admin":user_twines[story_id]['admin']
+                    }
+
+                    ##if there's an unassociated entry on this user already
+                    if story_id in user_twines.keys():
+                        [i for i in filter(lambda x:x["story_id"]==story_id, current_user.twines)][0]["client_id"]=connect_event["client_id"]
+                    else:
+                        current_user.twines.append(user_twine_doc)
+                    root_db.save_user(current_user)
+
+                    username = get_random_username()
+                    client_doc = {"client_id":connect_event["client_id"], "username":username, "user_id":current_user.user_id}
+                    story_dbs[story_id].add_client(client_doc)
+                    del client_doc["_id"]
+                    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
     story_dbs[story_id].add_event(connect_event)
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
@@ -423,6 +445,18 @@ def client_admin_toggle(event):
     root_db.save_user(user)
     emit("client_admin_toggle_response")
 
+def client_added_toggle(event):
+    #get the user in the event
+    user = root_db.get_user_by_id(event["user_id"])
+    if event["added"]:
+        story_doc = {"story_id":event["story_id"], "client_id":None, "admin":None}
+        user.twines.append(story_doc)
+        root_db.save_user(user)
+    else:
+        user.twines = [i for i in user.twines if i["story_id"]!=event["story_id"]]
+        root_db.save_user(user)
+    emit("client_added_toggle_response")
+
 ##user story toggle
 
 all_socket_handlers = {
@@ -433,7 +467,8 @@ all_socket_handlers = {
     "get_admin_clients":get_admin_clients,
     "update_client":update_client,
     "update_story":update_story,
-    "client_admin_toggle":client_admin_toggle
+    "client_admin_toggle":client_admin_toggle,
+    "client_added_toggle":client_added_toggle
 }
 
 ##############
