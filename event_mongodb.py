@@ -9,8 +9,7 @@ class User():
 		self.pass_hash = mongo_doc["pass_hash"]
 		self.username = mongo_doc["username"]
 		self.admin = mongo_doc["admin"]
-		#[{twine_story_id:str, client_id:str, admin:bool},...]
-		self.twines = mongo_doc["twines"] 
+		self.story_dict = mongo_doc["story_dict"]
 
 		self.is_authenticated = mongo_doc["is_authenticated"]
 		self.is_active = True #unnessecary for loom
@@ -18,6 +17,12 @@ class User():
 
 	def get_id(self):
 		return self.user_id
+
+	def get_client(self, story_id):
+		if story_id in self.story_dict.keys():
+			return self.story_dict[story_id]
+		else:
+			return None
 
 	def validate_pass(self, password):
 		self.is_authenticated = sha256_crypt.verify(password, self.pass_hash)
@@ -32,7 +37,7 @@ class User():
 			"username":self.username,
 			"pass_hash":self.pass_hash,
 			"user_id":self.user_id,
-			"twines":self.twines,
+			"story_dict":self.story_dict,
 			"admin":self.admin,
 			"is_authenticated":self.is_authenticated,
 		}
@@ -42,7 +47,7 @@ class User():
 		return {
 			"username":self.username,
 			"user_id":self.user_id,
-			"twines":self.twines,
+			"story_dict":self.story_dict,
 			"admin":self.admin,
 		}
 
@@ -81,7 +86,7 @@ class RootCollection():
 			"username":username,
 			"pass_hash":sha256_crypt.encrypt(password),
 			"user_id":str(uuid.uuid4()),
-			"twines":[],
+			"story_dict":{},
 			"admin":admin,
 			"is_authenticated":False
 		}

@@ -115,22 +115,21 @@ def landing():
     with open("templates/landing.html") as landing_loc:
         landing = landing_loc.read()
 
-    user_twines = {story["story_id"]:story for story in current_user.twines}
     all_twines = root_db.get_all_stories()
     view_twines = []
 
     for story in all_twines:
+        user_story_client = current_user.get_client(story["story_id"])
         if current_user.admin:
             view_twines.append( {"story":story, "admin":True} )
-        elif story["story_id"] in user_twines.keys():
-            if user_twines[story["story_id"]]["admin"]:
-                view_twines.append( {"story":story, "admin":True} )
+        elif story["auth_scheme"] != "invite":
+            if user_story_client is not None:
+                view_twines.append( {"story": story, "admin":user_story_client["admin"]} )
             else:
-                view_twines.append( {"story":story, "admin":False} )
-        #Another clause should prevent stories that a user hasn't been added to from appearing at all
-        #but let's make the loop to add users to stories first.
+                view_twines.append( {"story": story, "admin":False} )
         else:
-            view_twines.append( {"story":story, "admin":False} )
+            if user_story_client != None:
+                view_twines.append( {"story": story, "admin":user_story_client["admin"]} )
 
     if current_user.admin:
         users = root_db.get_all_users()
@@ -148,13 +147,10 @@ def serve_twine(twine_name):
     if story["auth_scheme"]=="login":
         if current_user.is_authenticated:
             return get_loomed_twine(twine_name)
-        else:
-            return redirect("/")
     if story["auth_scheme"]=="none":
         return get_loomed_twine(twine_name)
     if story["auth_scheme"]=="invite":
-        user_twines = [story["story_id"] for story in current_user.twines]
-        if twine_name in user_twines:
+        if current_user.is_authenticated and current_user.get_client(twine_name) is not None:
             return get_loomed_twine(twine_name)
     return redirect("/")
 
@@ -171,7 +167,7 @@ def exit_event():
 @app.route('/twine/<twine_id>/admin')
 @login_required
 def admin(twine_id):
-    user_story_doc = list(filter(lambda doc:doc["story_id"]==twine_id, current_user.twines))[0]
+    user_story_doc = current_user.story_dict[twine_id]
     if user_story_doc is not None and user_story_doc["admin"]:
         with open('templates/admin.html') as admin_loc:
             admin = admin_loc.read()
@@ -179,7 +175,6 @@ def admin(twine_id):
         return render_template_string(admin, twine=twine)
     else:
         return redirect("/")
-
 
 
 
@@ -214,6 +209,8 @@ def user_admin_toggle(event):
 ######################
 ## story-bound sockets
 
+
+#this particular function is due for a ol refactor sometime. 
 def connect_socket(connect_event):
     story_id = connect_event["story_id"]
     story = root_db.get_story(story_id)
@@ -222,15 +219,17 @@ def connect_socket(connect_event):
     if story["auth_scheme"] == "login":
         if(current_user.is_authenticated): #this should be a redundant clause but just in case...
             
-            user_twines = {story["story_id"]:story for story in current_user.twines}
+            user_story_doc = current_user.get_client(story_id)
+
             #if this user already has an entry for this story and this client, just grab it and send it
-            if story_id in user_twines.keys() and user_twines[story_id]["client_id"] is not None:
-                connect_event["client_id"] = user_twines[story_id]["client_id"]
-                client_doc = story_dbs[story_id].get_client(user_twines[story_id]["client_id"])
+            if user_story_doc is not None and user_story_doc["client_id"] is not None:
+                connect_event["client_id"] = user_story_doc["client_id"]
+                client_doc = story_dbs[story_id].get_client(user_story_doc["client_id"])
                 emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+            #otherwise: create one, add it to the userdoc, and send it
             else: 
-                if story_id in user_twines.keys():
-                    admin_val = user_twines[story_id]['admin']
+                if user_story_doc is not None:
+                    admin_val = user_story_doc['admin']
                 else:
                     admin_val = False
 
@@ -240,11 +239,7 @@ def connect_socket(connect_event):
                                     "admin":admin_val
                 }
 
-                ##if there's an unassociated entry on this user already
-                if story_id in user_twines.keys():
-                    [i for i in filter(lambda x:x["story_id"]==story_id, current_user.twines)][0]["client_id"]=connect_event["client_id"]
-                else:
-                    current_user.twines.append(user_twine_doc)
+                current_user.story_dict[story_id] = user_twine_doc
                 root_db.save_user(current_user)
 
                 username = get_random_username()
@@ -257,16 +252,17 @@ def connect_socket(connect_event):
     elif story["auth_scheme"] == "none":
         if(current_user.is_authenticated): #this should be a redundant clause but just in case...
             
-            user_twines = {story["story_id"]:story for story in current_user.twines}
             
+            user_story_doc = current_user.get_client(story_id)
+
             #if this user already has an entry for this story and this client, just grab it and send it
-            if story_id in user_twines.keys() and user_twines[story_id]["client_id"] is not None:
-                    connect_event["client_id"] = user_twines[story_id]["client_id"]
-                    client_doc = story_dbs[story_id].get_client(user_twines[story_id]["client_id"])
-                    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+            if user_story_doc is not None and user_story_doc["client_id"] is not None:
+                connect_event["client_id"] = user_story_doc["client_id"]
+                client_doc = story_dbs[story_id].get_client(user_story_doc["client_id"])
+                emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
             else: 
-                if story_id in user_twines.keys():
-                    admin_val = user_twines[story_id]['admin']
+                if user_story_doc is not None:
+                    admin_val = user_story_doc['admin']
                 else:
                     admin_val = False
 
@@ -275,12 +271,9 @@ def connect_socket(connect_event):
                                     "client_id":connect_event["client_id"], 
                                     "admin":admin_val
                 }
-                if story_id in user_twines.keys():
-                    [i for i in filter(lambda x:x["story_id"]==story_id, current_user.twines)][0]["client_id"]=connect_event["client_id"]
-                else:
-                    current_user.twines.append(user_twine_doc)
+                current_user.story_dict[story_id] = user_twine_doc
                 root_db.save_user(current_user)
-                
+
                 username = get_random_username()
                 client_doc = {"client_id":connect_event["client_id"], "username":username, "user_id":current_user.user_id}
                 story_dbs[story_id].add_client(client_doc)
@@ -299,33 +292,27 @@ def connect_socket(connect_event):
 
     if story["auth_scheme"] == "invite":
         if(current_user.is_authenticated): #this should be a redundant clause but just in case...
-            
-            user_twines = {story["story_id"]:story for story in current_user.twines}
-            #if this user already has an entry for this story and this client, just grab it and send it
-            if story_id in user_twines.keys():
-                if user_twines[story_id]["client_id"] is not None:
-                    connect_event["client_id"] = user_twines[story_id]["client_id"]
-                    client_doc = story_dbs[story_id].get_client(user_twines[story_id]["client_id"])
-                    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
-                else:
-                    user_twine_doc = {
-                                        "story_id":story_id, 
-                                        "client_id":connect_event["client_id"], 
-                                        "admin":user_twines[story_id]['admin']
-                    }
+            user_story_doc = current_user.get_client(story_id)
+            if user_story_doc is not None and user_story_doc["client_id"] is not None:
+                connect_event["client_id"] = user_story_doc["client_id"]
+                client_doc = story_dbs[story_id].get_client(user_story_doc["client_id"])
+                emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+            #otherwise: create one, add it to the userdoc, and send it
+            elif user_story_doc is not None: 
+                user_twine_doc = {
+                                    "story_id":story_id, 
+                                    "client_id":connect_event["client_id"], 
+                                    "admin":user_story_doc['admin']
+                }
 
-                    ##if there's an unassociated entry on this user already
-                    if story_id in user_twines.keys():
-                        [i for i in filter(lambda x:x["story_id"]==story_id, current_user.twines)][0]["client_id"]=connect_event["client_id"]
-                    else:
-                        current_user.twines.append(user_twine_doc)
-                    root_db.save_user(current_user)
+                current_user.story_dict[story_id] = user_twine_doc
+                root_db.save_user(current_user)
 
-                    username = get_random_username()
-                    client_doc = {"client_id":connect_event["client_id"], "username":username, "user_id":current_user.user_id}
-                    story_dbs[story_id].add_client(client_doc)
-                    del client_doc["_id"]
-                    emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
+                username = get_random_username()
+                client_doc = {"client_id":connect_event["client_id"], "username":username, "user_id":current_user.user_id}
+                story_dbs[story_id].add_client(client_doc)
+                del client_doc["_id"]
+                emit("client_connect_ok", client_doc, namespace="/{}".format(story_id))
 
     story_dbs[story_id].add_event(connect_event)
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
@@ -365,30 +352,27 @@ def get_admin_clients(story_id):
     final_table = {} #this will be client_id :: client+user doc 
     anon_count = 0 #count up an identifier for 
 
-    #step one is get all the users
-    all_users = [u.to_json() for u in root_db.get_all_users()]
-
-    #step two, we'll iterate over the users and transform them into one of three forms 
+    #we'll iterate over the users and transform them into one of three forms 
     #(and add them to a final table, indexed by client id (or other!)) 
-    for user in all_users:
-        if story_id in [doc["story_id"] for doc in user['twines']]:
-            user_twines = {story["story_id"]:story for story in user["twines"]}
-            if user_twines[story_id]["client_id"] is not None:
-                client_key = user_twines[story_id]["client_id"]
+    for user in root_db.get_all_users():
+        user_story_client = user.get_client(story_id)
+        if user_story_client is not None:
+            if user_story_client["client_id"] is not None:
+                client_key = user_story_client["client_id"]
                 doc = {
-                    "user_id":user["user_id"], 
-                    "username":user["username"],
+                    "user_id":user.user_id, 
+                    "username":user.username,
                     "added_to_story":True,
-                    "loom_admin":user["admin"],
+                    "loom_admin":user.admin,
                     "client_id":client_key,
-                    "story_admin":user_twines[story_id]["admin"]
+                    "story_admin":user_story_client["admin"]
                     }
             else:
                 client_key = anon_count
                 anon_count += 1
                 doc = {
-                    "user_id":user["user_id"], 
-                    "username":user["username"],
+                    "user_id":user.user_id, 
+                    "username":user.username,
                     "added_to_story":True,
                     "client_id":None,
                     "story_admin":False,
@@ -399,9 +383,9 @@ def get_admin_clients(story_id):
             client_key = anon_count
             anon_count += 1
             doc = {
-                "user_id":user["user_id"], 
-                "username":user["username"],
-                "loom_admin":user["admin"],
+                "user_id":user.user_id, 
+                "username":user.username,
+                "loom_admin":user.admin,
                 "added_to_story":False,
                 "client_id":None,
                 "story_admin":False,
@@ -440,8 +424,9 @@ def get_admin_clients(story_id):
 def client_admin_toggle(event):
     client = story_dbs[event["story_id"]].get_client(event["client_id"])
     user = root_db.get_user_by_id(client["user_id"])
-    twine = [i for i in filter(lambda x:x["client_id"] == client["client_id"], user.twines)][0]
-    twine["admin"] = event["admin"]
+    user_story_doc = user.get_client(event["story_id"])
+    user_story_doc["admin"] = event["admin"]
+    user.story_dict[event["story_id"]] = user_story_doc
     root_db.save_user(user)
     emit("client_admin_toggle_response")
 
@@ -450,10 +435,10 @@ def client_added_toggle(event):
     user = root_db.get_user_by_id(event["user_id"])
     if event["added"]:
         story_doc = {"story_id":event["story_id"], "client_id":None, "admin":None}
-        user.twines.append(story_doc)
+        user.story_dict[event["story_id"]] = story_doc
         root_db.save_user(user)
     else:
-        user.twines = [i for i in user.twines if i["story_id"]!=event["story_id"]]
+        user.story_dict[event["story_id"]] = None
         root_db.save_user(user)
     emit("client_added_toggle_response")
 
@@ -497,7 +482,7 @@ def setup():
     new, admin_user = root_db.new_user("admin", os.environ["ADMIN_PASS"], admin=True)
     if new:
         for story_id in twines:
-            admin_user.twines.append({"story_id":story_id, "client_id":None, "admin":True})
+            admin_user.story_dict[story_id] = {"story_id":story_id, "client_id":None, "admin":True}
         root_db.save_user(admin_user)
     new, test_user = root_db.new_user("test", "test")
 
