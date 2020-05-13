@@ -204,7 +204,25 @@ def user_admin_toggle(event):
     root_db.save_user(user)
     emit("user_admin_toggle_response")
 
-
+@socketio.on("validate_code")
+def validate_code(code):
+    code_doc = root_db.get_code(code)
+    print(code_doc)
+    pp.pprint(current_user)
+    if code_doc is None:
+        emit("validate_code_response", {"message":"No Such Code Found"})
+    elif code_doc["story_id"] in current_user.story_dict.keys() and current_user.story_dict[code_doc["story_id"]] is not None:
+        emit("validate_code_response", {"message":"You've already joined this story"})
+    elif code_doc["used"]:
+        emit("validate_code_response", {"message":"This code has already been used"})
+    else:
+        current_user.story_dict[code_doc["story_id"]] = {"story_id":code_doc["story_id"], "client_id":None, "admin":False}
+        code_doc["used"] = True
+        code_doc["used_by"] = current_user.username
+        code_doc["user_by_id"] = current_user.user_id
+        root_db.save_user(current_user)
+        root_db.update_code(code_doc)
+        emit("validate_code_response", {"message":"Success!"})
 
 ######################
 ## story-bound sockets

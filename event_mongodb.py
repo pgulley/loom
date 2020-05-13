@@ -133,7 +133,7 @@ class RootCollection():
 		return [clean_mongo_doc(code) for code in self.codes.find({"story_id":story_id})]
 
 	def update_code(self, code_doc):
-		self.codes.replace_one({"code":code}, code_doc)
+		self.codes.replace_one({"code":code_doc["code"]}, code_doc)
 
 
 
