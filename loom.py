@@ -7,7 +7,7 @@ import json
 import os
 import sys
 from event_mongodb import RootCollection, StoryCollection
-from random_username import get_random_username
+from random_utils import get_random_username, get_invite_code
 import process_twine
 
 import pprint
@@ -442,8 +442,18 @@ def client_added_toggle(event):
         root_db.save_user(user)
     emit("client_added_toggle_response")
 
-##user story toggle
+def generate_codes(event):
+    codes = [get_invite_code() for i in range(int(event["number"]))]
+    for code in codes:
+        root_db.add_code(code, event["story_id"])
+    all_story_codes = root_db.get_story_codes(event["story_id"])
+    emit("invite_codes", all_story_codes)
 
+def get_codes(story_id):
+    all_story_codes = root_db.get_story_codes(story_id)
+    emit("invite_codes", all_story_codes)
+
+##user story toggle
 all_socket_handlers = {
     "confirm_connected": connect_socket,
     "nav_event": nav_event,
@@ -453,7 +463,9 @@ all_socket_handlers = {
     "update_client":update_client,
     "update_story":update_story,
     "client_admin_toggle":client_admin_toggle,
-    "client_added_toggle":client_added_toggle
+    "client_added_toggle":client_added_toggle,
+    "generate_codes":generate_codes,
+    "get_codes":get_codes
 }
 
 ##############

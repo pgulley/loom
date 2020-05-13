@@ -178,6 +178,16 @@ function update_passage_graph(){
 	})
 }
 
+function render_codes_list(codes_list){
+	$(".code_list").empty()
+	$(".code_list")[0].innerHTML = codes_list.map(function(c){
+		return `<tr class="${(c.used ? "used" : "")}">
+			<td> ${c.code} </td>
+			<td> ${(c.used_by==null ? "" : c.used_by)}</td>
+		</tr>`
+	}).join("")
+}
+
 //Sockets!	
 
 var socket = io(`/${loom_admin.story_id}`)
@@ -203,6 +213,7 @@ socket.on("admin_clients", function(clients){
 	setup_users_table(clients)
 	loom_admin.setup = true
 	socket.emit("get_client_locations", loom_admin.story_id)
+	socket.emit("get_codes", loom_admin.story_id)
 })
 
 socket.on("clients_present", function(clients){
@@ -218,6 +229,10 @@ socket.on("clients_present", function(clients){
 	}
 })
 
+socket.on("invite_codes", function(codes){
+	render_codes_list(codes)
+})
+
 $(document).on("change", "#auth_scheme_input", function(){
 	loom_admin.story_doc.auth_scheme = $("#auth_scheme_input input:checked")[0].id.split("_")[1]
 	socket.emit("update_story", loom_admin.story_doc)
@@ -231,3 +246,6 @@ $(document).on("change", ".added_toggle", function(){
 	socket.emit("client_added_toggle", {story_id:loom_admin.story_id, user_id:$(this).val(), added:$(this).is(":checked")})
 })
 
+$(document).on("click", "#create_codes", function(){
+	socket.emit("generate_codes", {story_id:loom_admin.story_id, number:$("#invite_num").val()})
+})

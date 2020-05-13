@@ -68,6 +68,7 @@ class RootCollection():
 		self.db = db
 		self.stories = db.stories
 		self.users = db.users
+		self.codes = db.codes
 
 	def add_story(self, story_doc):
 		self.stories.insert_one(story_doc)
@@ -81,6 +82,7 @@ class RootCollection():
 	def get_all_stories(self):
 		return [clean_mongo_doc(item) for item in self.stories.find()]
 
+	###Users
 	def new_user(self, username, password, admin=False):
 		doc = {
 			"username":username,
@@ -119,6 +121,20 @@ class RootCollection():
 	def save_user(self, User):
 		self.users.replace_one({"user_id":User.user_id}, User.to_doc())
 		return User
+
+	###Invitation Codes
+	def add_code(self, code, story):
+		self.codes.insert({"code":code, "story_id":story, "used":False, "used_by":None})
+
+	def get_code(self, code):
+		return self.codes.find_one({"code":code})
+
+	def get_story_codes(self,story_id):
+		return [clean_mongo_doc(code) for code in self.codes.find({"story_id":story_id})]
+
+	def update_code(self, code_doc):
+		self.codes.replace_one({"code":code}, code_doc)
+
 
 
 class StoryCollection():
