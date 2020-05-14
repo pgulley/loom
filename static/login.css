@@ -18,11 +18,26 @@ a.head_link :clicked{
 	font-size:20px;
 }
 
+.box_content{
+	margin-left: 10px;
+	margin-bottom:10px;
+	font-size: 20px;
+	border: 2px solid black;
+	width: 40%;
+	padding-left: 10px;
+	padding-bottom:5px;
+}
+
 h2{
 	font-size: 20px;
     padding-left: 10px;
     border-bottom: 1px solid black;
     display: block;
+}
+
+
+h3{
+	margin-top:5px;
 }
 
 img.logo{
@@ -34,4 +49,15 @@ img.logo{
 	position:relative;
 	font-size:30px;
 	bottom:7px;
+}
+
+#login_errors{
+	font-size:15px;
+	font-style:italic;
+	color:red;
+}
+
+#create_user_errors{
+	font-size:15px;
+	font-style:italic;
 }

@@ -10,7 +10,8 @@
 <body>
 <h1> <a class="head_link" href="/"> <img class="logo" src='/static/favicon.ico'> <div class="brand_header"> Loom </div> </a></h1>
 
-<div>
+<div class="box_content">
+	<h3> Login </h3>
 	<label for="uname">Username</label>
 	<input type="text" id="uname" name="uname" value="">
 	<labl for="pword"> Password </labl>
@@ -18,7 +19,15 @@
 	<div id="login_errors"></div>
 	<button id="submit"> Login </button>
 </div>
-
+<div class="box_content">
+	<h3> Create User </h3>
+	<label for="create_uname">Username</label>
+	<input type="text" id="create_uname" name="create_uname" value="">
+	<labl for="create_pword"> Password </labl>
+	<input type="password" id="create_pword" name="create_pword" value="">
+	<div id="create_user_errors"></div>
+	<button id="create_user"> Create </button>
+</div>
 </body>
 
 </html>

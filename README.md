@@ -51,13 +51,13 @@ MVP is done and deployed!
 
 - [ ] Authentication / User Sessions 
 	- [X] basic universal login loop
-	- [ ] new user creation
+	- [X] new user creation
 	- [ ] Story-scope permissions
 		- [ ] 3 Auth Schemes:
 			- [X] None Scheme (default)
 			- [X] Login Required scheme
 				- [X] associate clients with users
-			- [ ] Invitation scheme
+			- [X] Invitation scheme
 
 - [ ] Chat features
 	- [X] None Scheme 
@@ -66,7 +66,7 @@ MVP is done and deployed!
 
 - [ ] UI
 	- [ ] Admin reskin
-	- [ ] fontz
+	- [ ] fontz?
 
 #### Down the road options
 
@@ -77,7 +77,6 @@ MVP is done and deployed!
 - [ ] Extended API- ifttt? 
 
 #### 
-- [X] Check out the loading bug
-
+- [ ] Certain UI Elements are unresponsive in chrome
 
 
