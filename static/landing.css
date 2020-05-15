@@ -3,11 +3,12 @@ h1{
 }
 
 img.logo{
-	height:40px
+	height:35px
 }
 
 a.head_link{
 	color:black;
+	text-decoration:none;
 }
 
 a.head_link :clicked{

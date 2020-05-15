@@ -14,6 +14,12 @@ a :clicked{
 	color:black;
 }
 
+a.head_link{
+	color:black;
+	text-decoration:none;
+}
+
+
 #username{
 	display:inline-block;
 	float:right;
@@ -30,7 +36,7 @@ h2{
 }
 
 img.logo{
-	height:40px
+	height:35px
 }
 
 .brand_header{
