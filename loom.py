@@ -45,10 +45,9 @@ def load_user(user_id):
 # prepare a story for the browser #
 ###################################
 
-def get_loomed_twine(twine_name):
-    with open("twines/{}.html".format(twine_name), "r") as twine_file:
-        twine = twine_file.read()
-
+def get_loomed_twine(story):
+    twine = story.raw
+    
     with open("static/loom.js", "r") as loom_js_file:
         loom_js = loom_js_file.read()
 
@@ -146,12 +145,12 @@ def serve_twine(twine_name):
     story = root_db.get_story(twine_name)
     if story["auth_scheme"]=="login":
         if current_user.is_authenticated:
-            return get_loomed_twine(twine_name)
+            return get_loomed_twine(story)
     if story["auth_scheme"]=="none":
-        return get_loomed_twine(twine_name)
+        return get_loomed_twine(story)
     if story["auth_scheme"]=="invite":
         if current_user.is_authenticated and current_user.get_client(twine_name) is not None:
-            return get_loomed_twine(twine_name)
+            return get_loomed_twine(story)
     return redirect("/")
 
 @app.route("/log", methods=["POST"])
@@ -504,7 +503,9 @@ def setup():
         #this setup should only happen once per twine per database instantiation 
         if story_id not in already_twines:
             twine_structure = process_twine.process("twines/{}.html", story_id)
-            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none"}
+            with open("twines/{}.html".format(story_id), "r") as twine_file:
+                twine_raw = twine_file.read()
+            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none", "raw":twine_raw}
             root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)
