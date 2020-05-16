@@ -39,6 +39,21 @@
 	{% if current_user.admin %}
 	<div class="admin_content">
 		<h2> Admin </h2>
+		<div class="box_content">
+			<h3> Upload New Story </h3>
+
+			<input type='file' accept=".html" id="upload_new_twine">
+			<div id="auth_scheme_input">
+					Set Authorization Scheme </br>
+					<input type="radio" id="auth_none" name="auth" value="auth_none" checked>
+					<label for="auth_none"> None</label><br>
+					<input type="radio" id="auth_login" name="auth" value="auth_login">
+					<label for="auth_login">Login Required</label><br>
+					<input type="radio" id="auth_invite" name="auth" value="auth">
+					<label for="auth_invite">Invite Only</label>
+			</div>
+			<button id="submit_new_twine" disabled>Upload</button> 
+		</div>
 		<div class="box_content new_user">
 			<h3> Create New Users </h3>
 			<label for="uname">Username</label>

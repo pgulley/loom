@@ -37,6 +37,7 @@ a.head_link :clicked{
 	border: 2px solid black;
 	width: 40%;
 	padding-left: 10px;
+	padding-bottom:10px;
 }
 
 .twine_entry{

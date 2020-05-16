@@ -10,8 +10,7 @@ from event_mongodb import RootCollection, StoryCollection
 from random_utils import get_random_username, get_invite_code
 import process_twine
 
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
+from pprint import pprint as pp
 
 #####################
 # environment setup #
@@ -46,14 +45,14 @@ def load_user(user_id):
 ###################################
 
 def get_loomed_twine(story):
-    twine = story.raw
+    
+    twine = story["raw"]
     
     with open("static/loom.js", "r") as loom_js_file:
         loom_js = loom_js_file.read()
 
     with open("static/loom.css") as css:
         loom_css = css.read()
-
 
     socket_inject = "<script type='text/javascript' src='/static/socketio.js'></script>"
     iro_inject = "<script type='text/javascript' src='/static/iro.js'></script>"
@@ -66,7 +65,7 @@ def get_loomed_twine(story):
     loomed = bootcss_inject+loomed
     loomed = socket_inject+loomed
     loomed = iro_inject+loomed
-    loomed = loomed+bootjs_inject
+    loomed = loomed+bootjs_inject #puts bootstrap at the bottom of the file, so it loads after the twine native jquery
 
     return loomed
 
@@ -166,7 +165,8 @@ def exit_event():
 @app.route('/twine/<twine_id>/admin')
 @login_required
 def admin(twine_id):
-    user_story_doc = current_user.story_dict[twine_id]
+    print(twine_id)
+    user_story_doc = current_user.get_client(twine_id)
     if user_story_doc is not None and user_story_doc["admin"]:
         with open('templates/admin.html') as admin_loc:
             admin = admin_loc.read()
@@ -206,8 +206,6 @@ def user_admin_toggle(event):
 @socketio.on("validate_code")
 def validate_code(code):
     code_doc = root_db.get_code(code)
-    print(code_doc)
-    pp.pprint(current_user)
     if code_doc is None:
         emit("validate_code_response", {"message":"No Such Code Found"})
     elif code_doc["story_id"] in current_user.story_dict.keys() and current_user.story_dict[code_doc["story_id"]] is not None:
@@ -222,6 +220,35 @@ def validate_code(code):
         root_db.save_user(current_user)
         root_db.update_code(code_doc)
         emit("validate_code_response", {"message":"Success!"})
+
+@socketio.on("new_twine")
+def create_new_twine(create_event):
+    story_id = create_event["story_id"]
+    twine_raw = create_event["twine_raw"]
+    
+    ##create and register the new twine
+    twine_structure = process_twine.process_raw(twine_raw)
+    story_doc = {
+            "story_id":story_id,
+            "title":twine_structure["title"], 
+            "auth_scheme":create_event["auth_scheme"], 
+            "raw":twine_raw}
+    root_db.add_story(story_doc)
+
+    ##add one new story_db interface to memory
+    story_dbs[story_id] = StoryCollection(db, story_id)
+    for passage in twine_structure["passages"]:
+        story_dbs[story_id].add_passage(passage)
+
+    ##register all the new story-specific sockets
+    for name, function in all_socket_handlers.items():
+            socketio.on_event(name, function, namespace="/{}".format(story_id))
+
+    ##add admin access for uploader
+    current_user.story_dict[story_id] = {"story_id":story_id, "client_id":None, "admin":True}
+    root_db.save_user(current_user)
+    emit("new_twine_ok")
+
 
 ######################
 ## story-bound sockets
@@ -495,20 +522,27 @@ def setup():
     already_twines = [story['story_id'] for story in root_db.get_all_stories()]
     for story_id in twines:
         print("setup {}".format(story_id))
-        story_dbs[story_id] = StoryCollection(db, story_id)
 
-        for name, function in all_socket_handlers.items():
-            socketio.on_event(name, function, namespace="/{}".format(story_id))
-
-        #this setup should only happen once per twine per database instantiation 
+        #this setup should only happen once per twine per database reset 
         if story_id not in already_twines:
-            twine_structure = process_twine.process("twines/{}.html", story_id)
+            story_dbs[story_id] = StoryCollection(db, story_id)
+
+            for name, function in all_socket_handlers.items():
+                socketio.on_event(name, function, namespace="/{}".format(story_id))
+
+            twine_structure = process_twine.process_file("twines/{}.html", story_id)
             with open("twines/{}.html".format(story_id), "r") as twine_file:
                 twine_raw = twine_file.read()
             story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none", "raw":twine_raw}
             root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)
+
+    for story_id in already_twines:
+        story_dbs[story_id] = StoryCollection(db, story_id)
+        for name, function in all_socket_handlers.items():
+            socketio.on_event(name, function, namespace="/{}".format(story_id))
+
     print("finished story setup")
     new, admin_user = root_db.new_user("admin", os.environ["ADMIN_PASS"], admin=True)
     if new:

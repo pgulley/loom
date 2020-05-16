@@ -49,11 +49,11 @@ MVP is done and deployed!
 
 #### 0.2 checklist
 
-- [ ] Authentication / User Sessions 
+- [X] Authentication / User Sessions 
 	- [X] basic universal login loop
 	- [X] new user creation
-	- [ ] Story-scope permissions
-		- [ ] 3 Auth Schemes:
+	- [X] Story-scope permissions
+		- [X] 3 Auth Schemes:
 			- [X] None Scheme (default)
 			- [X] Login Required scheme
 				- [X] associate clients with users
@@ -70,13 +70,13 @@ MVP is done and deployed!
 
 #### Down the road options
 
-- [ ] Web Interface to load new stories
+- [X] Web Interface to load new stories
 - [ ] Client to client chatting
 - [ ] More Admin interaction options
 - [ ] More Sugarcube Engine interactions (variables etc)
 - [ ] Extended API- ifttt? 
 
 #### 
-- [ ] Certain UI Elements are unresponsive in chrome
+- [X] Certain UI Elements are unresponsive in chrome
 
 

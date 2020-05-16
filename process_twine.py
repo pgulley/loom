@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import re
+from pprint import pprint as pp
 
 #helper functions which process the twine story literal into a schematic representation
 
@@ -25,7 +26,7 @@ def process_passage(passage):
 	attrs["link_titles"] = links
 	return attrs
 
-def process(location_format, twine_loc):
+def process_file(location_format, twine_loc):
 	with open(location_format.format(twine_loc)) as tw:
 		twine = tw.read()
 
@@ -37,5 +38,18 @@ def process(location_format, twine_loc):
 	#We need the sugarcube id for each link for anything on the browser to work. 
 	title_id_map = {p["title"]:p["passage_id"] for p in passages}
 	for passage in passages:
-		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"]]
+		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "https" not in link_title]
 	return {"story_id":twine_loc, "title":story_title, "passages":passages}
+
+
+def process_raw(twine_raw):
+	soup = BeautifulSoup(twine_raw, "html.parser")
+	story_title = soup.find("title").text
+	passages_raw = soup.findAll("tw-passagedata")
+	passages = [process_passage(p) for p in passages_raw]
+	
+	#We need the sugarcube id for each link for anything on the browser to work. 
+	title_id_map = {p["title"]:p["passage_id"] for p in passages}
+	for passage in passages:
+		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "https" not in link_title]
+	return {"title":story_title, "passages":passages}

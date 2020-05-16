@@ -36,8 +36,7 @@ socket.on("validate_code_response", function(resp){
 	$("#code_errors")[0].innerHTML = resp["message"]
 })
 
-$(document).click("#submit_code", function(){
-	console.log("clickn")
+$(document).on("click","#submit_code", function(){
 	$("#code_errors")[0].innerHTML = ""
 	var code = $("#code").val()
 	socket.emit("validate_code", code)
@@ -56,4 +55,28 @@ $(document).on("click", "#submit_user", function(){
 
 $(document).on("change", ".admin_toggle", function(){
 	socket.emit("user_admin_toggle", {user:$(this).val(), admin:$(this).is(":checked")})
+})
+
+
+$(document).on("change", "#upload_new_twine", function(){
+	console.log($("#upload_new_twine").prop("files"))
+	if($("#upload_new_twine").prop("files").length==1){
+		$("#submit_new_twine").removeAttr("disabled")
+	}
+	else{
+		$("#submit_new_twine").attr("disabled", true)
+	}
+})
+$(document).on("click", "#submit_new_twine", function(){
+	console.log("Click")
+	var fr = new FileReader
+	fr.onload = function(e){
+		var auth_scheme = $("#auth_scheme_input input:checked")[0].id.split("_")[1]
+		var raw_twine = e.target.result
+		socket.emit("new_twine", {"story_id": story_id, "twine_raw":raw_twine, "auth_scheme":auth_scheme })
+	}
+	var twine_file = $("#upload_new_twine").prop("files")[0]
+	var story_id = twine_file.name.split(".")[0]
+	fr.readAsText(twine_file)
+	
 })
