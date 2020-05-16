@@ -1,3 +1,12 @@
+@font-face{
+	font-family:Chapaza;
+	src:url("Chapaza.ttf") format("truetype");
+}
+
+body{
+	font-family:Chapaza;
+}
+
 h1{
 	border-bottom:2px solid black;
 }
@@ -35,14 +44,19 @@ h2{
     display: block;
 }
 
+h3{
+	margin-top:5px;
+	margin-bottom:10px;
+}
+
 img.logo{
-	height:35px
+	height:40px
 }
 
 .brand_header{
 	display:inline-block;
 	position:relative;
-	font-size:30px;
+	font-size:35px;
 	bottom:7px;
 }
 
