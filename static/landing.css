@@ -1,3 +1,7 @@
+body{
+	background-image:linear-gradient(white, #49455375);
+}
+
 .twine_entry{
 
 }
@@ -15,7 +19,6 @@
 }
 
 .admin_content{
-	border-top:1px solid black;
 	padding-top:10px;
 }
 
