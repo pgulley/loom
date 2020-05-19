@@ -69,6 +69,23 @@ def get_loomed_twine(story):
 
     return loomed
 
+def get_user_view_stories(user):
+    all_twines = root_db.get_all_stories()
+    view_twines = []
+
+    for story in all_twines:
+        user_story_client = current_user.get_client(story["story_id"])
+        if current_user.admin:
+            view_twines.append( {"story":story, "admin":True} )
+        elif story["auth_scheme"] != "invite":
+            if user_story_client is not None:
+                view_twines.append( {"story": story, "admin":user_story_client["admin"]} )
+            else:
+                view_twines.append( {"story": story, "admin":False} )
+        else:
+            if user_story_client != None:
+                view_twines.append( {"story": story, "admin":user_story_client["admin"]} )
+    return view_twines
 
 ######################
 # main server functs #
@@ -207,11 +224,11 @@ def user_admin_toggle(event):
 def validate_code(code):
     code_doc = root_db.get_code(code)
     if code_doc is None:
-        emit("validate_code_response", {"message":"No Such Code Found"})
+        emit("validate_code_response", {"message":"No Such Code Found", "stories":None})
     elif code_doc["story_id"] in current_user.story_dict.keys() and current_user.story_dict[code_doc["story_id"]] is not None:
-        emit("validate_code_response", {"message":"You've already joined this story"})
+        emit("validate_code_response", {"message":"You've already joined this story", "stories":None})
     elif code_doc["used"]:
-        emit("validate_code_response", {"message":"This code has already been used"})
+        emit("validate_code_response", {"message":"This code has already been used", "stories":None})
     else:
         current_user.story_dict[code_doc["story_id"]] = {"story_id":code_doc["story_id"], "client_id":None, "admin":False}
         code_doc["used"] = True
@@ -219,13 +236,16 @@ def validate_code(code):
         code_doc["user_by_id"] = current_user.user_id
         root_db.save_user(current_user)
         root_db.update_code(code_doc)
-        emit("validate_code_response", {"message":"Success!"})
+        #Send all stories again
+        emit("validate_code_response", {"message":"Success","stories":get_user_view_stories(current_user)})
 
 @socketio.on("new_twine")
 def create_new_twine(create_event):
     story_id = create_event["story_id"]
     twine_raw = create_event["twine_raw"]
     
+    ###SAINITY CHECK PLS
+
     ##create and register the new twine
     twine_structure = process_twine.process_raw(twine_raw)
     story_doc = {
@@ -247,7 +267,8 @@ def create_new_twine(create_event):
     ##add admin access for uploader
     current_user.story_dict[story_id] = {"story_id":story_id, "client_id":None, "admin":True}
     root_db.save_user(current_user)
-    emit("new_twine_ok")
+    #send all stories again
+    emit("new_twine_response", {"message":"Success", "stories":get_user_view_stories(current_user)})
 
 
 ######################
@@ -362,7 +383,6 @@ def connect_socket(connect_event):
     client_locations = story_dbs[story_id].get_all_current_client_location_events()
     emit("clients_present", client_locations, namespace="/{}".format(story_id), broadcast="true")
 
-
 def nav_event(nav_event):
     story_id = nav_event["story_id"]
     story_dbs[story_id].add_event(nav_event)
@@ -391,7 +411,7 @@ def update_story(story_update_doc):
     root_db.update_story(story_update_doc)
     emit("story_updated")
 
-#the complexity of this function could be obliterated by a more model oriented storage system
+#the complexity of this function could be greatly reduced by a more model oriented storage system
 def get_admin_clients(story_id):
     final_table = {} #this will be client_id :: client+user doc 
     anon_count = 0 #count up an identifier for 
@@ -466,6 +486,7 @@ def get_admin_clients(story_id):
     emit("admin_clients", [doc for doc in final_table.values()])
 
 def client_admin_toggle(event):
+    #give a user admin rights on a story
     client = story_dbs[event["story_id"]].get_client(event["client_id"])
     user = root_db.get_user_by_id(client["user_id"])
     user_story_doc = user.get_client(event["story_id"])
@@ -475,7 +496,7 @@ def client_admin_toggle(event):
     emit("client_admin_toggle_response")
 
 def client_added_toggle(event):
-    #get the user in the event
+    #add a user to the story
     user = root_db.get_user_by_id(event["user_id"])
     if event["added"]:
         story_doc = {"story_id":event["story_id"], "client_id":None, "admin":None}

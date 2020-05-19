@@ -18,6 +18,17 @@ function render_user_table(user_list){
 	$("#user_table")[0].innerHTML = user_table
 }
 
+function render_story_list(storylist){
+	twines =  storylist.map(function(twine){
+		return `<div class="box_content twine_entry"> 
+			<h3>${ twine.story.title }</h3>
+			<a href="/twine/${ twine.story.story_id }"> play story </a> </br>
+			${ (twine.admin ? `<a class="admin_link" href="/twine/{{ twine.story.story_id }}/admin"> admin view </a>` : '')}
+		</div>`
+	}).join("")
+	$("#twines_list")[0].innerHTML = twines
+}
+
 var socket = io()
 socket.on('connect', function() {
 	console.log("connected!")
@@ -34,6 +45,17 @@ socket.on("create_user_response", function(resp){
 socket.on("validate_code_response", function(resp){
 	console.log(resp)
 	$("#code_errors")[0].innerHTML = resp["message"]
+	if(resp["stories"] != null){
+		render_story_list(resp["stories"])
+	}
+})
+
+socket.on("new_twine_response", function(resp){
+	console.log(resp)
+	if(resp["stories"] != null){
+		render_story_list(resp["stories"])
+	}
+	
 })
 
 $(document).on("click","#submit_code", function(){

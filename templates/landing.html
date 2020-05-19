@@ -23,8 +23,9 @@
 		<div id="code_errors">
 		</div>
 	</div>
-	<div class="twine list">
+	<div class="twine">
 		<h2> Stories </h2>
+		<div id="twines_list">
 		{% for twine in twines %}
 
 		<div class="box_content twine_entry"> 
@@ -36,6 +37,7 @@
 		</div>
 
 		{% endfor %}
+		</div>
 	</div>
 	{% if current_user.admin %}
 	<div class="admin_content">
