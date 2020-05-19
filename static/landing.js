@@ -55,6 +55,9 @@ socket.on("new_twine_response", function(resp){
 	if(resp["stories"] != null){
 		render_story_list(resp["stories"])
 	}
+	else{
+		$("#new_twine_errors")[0].innerHTML = resp["message"].map(function(er){return `<li> ${er} </li>`}).join("")
+	}
 	
 })
 

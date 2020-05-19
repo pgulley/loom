@@ -35,7 +35,7 @@ def process_file(location_format, twine_loc):
 	passages_raw = soup.findAll("tw-passagedata")
 	passages = [process_passage(p) for p in passages_raw]
 	
-	#We need the sugarcube id for each link for anything on the browser to work. 
+	#We need the twine engine for each link for anything on the browser to work. 
 	title_id_map = {p["title"]:p["passage_id"] for p in passages}
 	for passage in passages:
 		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "https" not in link_title]
@@ -48,8 +48,22 @@ def process_raw(twine_raw):
 	passages_raw = soup.findAll("tw-passagedata")
 	passages = [process_passage(p) for p in passages_raw]
 	
-	#We need the sugarcube id for each link for anything on the browser to work. 
+	#We need the twine engine id for each link for anything on the browser to work. 
 	title_id_map = {p["title"]:p["passage_id"] for p in passages}
 	for passage in passages:
 		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "https" not in link_title]
 	return {"title":story_title, "passages":passages}
+
+#to check new uploaded raw stories
+def validate_raw(uploaded_raw):
+	soup = BeautifulSoup(uploaded_raw, "html.parser")
+	has_loom_js = "{LOOM_JS}" in uploaded_raw
+	has_loom_css = "{LOOM_CSS}" in uploaded_raw
+	twine_tag = soup.find("tw-storydata")
+	if twine_tag is not None:
+		is_twine = True
+		is_sugarcube = twine_tag["format"] == "SugarCube"
+	else:
+		is_twine = False
+		is_sugarcube = False
+	return {"Missing {LOOM_JS} tag":has_loom_js, "Missing {LOOM_CSS} tag":has_loom_css, "Is not a twine story": is_twine, "Is not a sugarcube story":is_sugarcube}

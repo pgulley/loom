@@ -245,30 +245,40 @@ def create_new_twine(create_event):
     twine_raw = create_event["twine_raw"]
     
     ###SAINITY CHECK PLS
+    twine_checks = process_twine.validate_raw(twine_raw)
+    all_story_ids = [s["story_id"] for s in root_db.get_all_stories()]
+    if story_id in all_story_ids:
+        twine_checks["Story name must be unique"] = False 
 
-    ##create and register the new twine
-    twine_structure = process_twine.process_raw(twine_raw)
-    story_doc = {
-            "story_id":story_id,
-            "title":twine_structure["title"], 
-            "auth_scheme":create_event["auth_scheme"], 
-            "raw":twine_raw}
-    root_db.add_story(story_doc)
+    #if any of the validations flag are false, we cannot accept this item /karen/ 
+    flags = [k for k, v in twine_checks.items() if not v]
+    if len(flags) > 0:
+        emit("new_twine_response", {"message":flags, "stories":None})
 
-    ##add one new story_db interface to memory
-    story_dbs[story_id] = StoryCollection(db, story_id)
-    for passage in twine_structure["passages"]:
-        story_dbs[story_id].add_passage(passage)
+    else:    
+        ##create and register the new twine
+        twine_structure = process_twine.process_raw(twine_raw)
+        story_doc = {
+                "story_id":story_id,
+                "title":twine_structure["title"], 
+                "auth_scheme":create_event["auth_scheme"], 
+                "raw":twine_raw}
+        root_db.add_story(story_doc)
 
-    ##register all the new story-specific sockets
-    for name, function in all_socket_handlers.items():
-            socketio.on_event(name, function, namespace="/{}".format(story_id))
+        ##add one new story_db interface to memory
+        story_dbs[story_id] = StoryCollection(db, story_id)
+        for passage in twine_structure["passages"]:
+            story_dbs[story_id].add_passage(passage)
 
-    ##add admin access for uploader
-    current_user.story_dict[story_id] = {"story_id":story_id, "client_id":None, "admin":True}
-    root_db.save_user(current_user)
-    #send all stories again
-    emit("new_twine_response", {"message":"Success", "stories":get_user_view_stories(current_user)})
+        ##register all the new story-specific sockets
+        for name, function in all_socket_handlers.items():
+                socketio.on_event(name, function, namespace="/{}".format(story_id))
+
+        ##add admin access for uploader
+        current_user.story_dict[story_id] = {"story_id":story_id, "client_id":None, "admin":True}
+        root_db.save_user(current_user)
+        #send all stories again
+        emit("new_twine_response", {"message":"Success", "stories":get_user_view_stories(current_user)})
 
 
 ######################

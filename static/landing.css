@@ -37,3 +37,17 @@
 	font-size:15px;
 	font-style:italic;
 }
+
+#auth_scheme_input{
+	margin-top:5px;
+	margin-left:10px;
+	margin-bottom:10px;
+	font-size:15px;
+}
+
+#new_twine_errors{
+	font-style:italic;
+	list-style:none;
+	font-size:12px;
+	margin-bottom:10px;
+}
