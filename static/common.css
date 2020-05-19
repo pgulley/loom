@@ -1,0 +1,95 @@
+@font-face{
+	font-family:Chapaza;
+	src:url("Chapaza.ttf") format("truetype");
+}
+
+body{
+	font-family:Chapaza;
+}
+
+h1{
+	border-bottom:2px solid black;
+}
+
+a {
+	color:black;
+}
+
+a :hover{
+	color:grey;
+}
+
+a :clicked{
+	color:black;
+}
+
+a.head_link{
+	color:black;
+	text-decoration:none;
+}
+
+
+#username{
+	display:inline-block;
+	float:right;
+	font-style:italic;
+	padding-right:10px;
+	font-size:20px;
+}
+
+h2{
+	font-size: 20px;
+    padding-left: 10px;
+    border-bottom: 1px solid black;
+    display: block;
+}
+
+h3{
+	margin-top:5px;
+	margin-bottom:10px;
+	font-weight:bold;
+}
+
+img.logo{
+	height:40px
+}
+
+.brand_header{
+	display:inline-block;
+	position:relative;
+	font-size:35px;
+	bottom:7px;
+}
+
+h2.a{
+	display:inline-block;
+	font-style:italic;
+}
+
+tr{
+	border-bottom:2px solid black;
+}
+
+tr.exit{
+	color:grey;
+}
+
+td{
+	border-right:2px solid grey;
+	margin-right:3px;
+}
+
+th{
+	padding-left:10px;
+	padding-right:10px;
+}
+
+.box_content{
+	margin-left: 10px;
+	margin-bottom:10px;
+	font-size: 20px;
+	border: 2px solid black;
+	width: 40%;
+	padding-left: 10px;
+	padding-bottom:5px;
+}

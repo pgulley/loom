@@ -1,54 +1,3 @@
-@font-face{
-	font-family:Chapaza;
-	src:url("Chapaza.ttf") format("truetype");
-}
-
-body{
-	font-family:Chapaza;
-}
-
-h1{
-	border-bottom:2px solid black;
-}
-
-img.logo{
-	height:40px
-}
-
-a.head_link{
-	color:black;
-	text-decoration:none;
-}
-
-a.head_link :clicked{
-	color:black;
-}
-
-.brand_header{
-	display:inline-block;
-	position:relative;
-	font-size:35px;
-	bottom:7px;
-}
-
-#username{
-	display:inline-block;
-	float:right;
-	font-style:italic;
-	padding-right:10px;
-	font-size:20px;
-}
-
-.box_content{
-	margin-left: 10px;
-	margin-bottom:10px;
-	font-size: 20px;
-	border: 2px solid black;
-	width: 40%;
-	padding-left: 10px;
-	padding-bottom:10px;
-}
-
 .twine_entry{
 
 }
@@ -76,16 +25,6 @@ a.head_link :clicked{
 
 .user_table{
 
-}
-
-h3{
-	margin-top:5px;
-	margin-bottom:10px;
-}
-
-h2{
-	margin-left:10px;
-	margin-bottom:5px;
 }
 
 #create_user_errors{
