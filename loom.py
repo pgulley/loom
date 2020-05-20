@@ -58,6 +58,7 @@ def get_loomed_twine(story):
     iro_inject = "<script type='text/javascript' src='/static/iro.js'></script>"
     bootjs_inject = "<script type='text/javascript' src='/static/bootstrap.bundle.min.js'></script>"
     bootcss_inject = "<link rel='stylesheet' type='text/css' href='/static/bootstrap.min.css'>"
+    jitsi_inject = "<script src='https://meet.jit.si/external_api.js'></script>"
         
     
     loomed = twine.replace("{LOOM_JS}", loom_js)
@@ -65,6 +66,7 @@ def get_loomed_twine(story):
     loomed = bootcss_inject+loomed
     loomed = socket_inject+loomed
     loomed = iro_inject+loomed
+    loomed = jitsi_inject+loomed
     loomed = loomed+bootjs_inject #puts bootstrap at the bottom of the file, so it loads after the twine native jquery
 
     return loomed

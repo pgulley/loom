@@ -1,3 +1,8 @@
+#story{
+	height: 40%;
+	overflow:auto;
+}
+
 .loom_ui_bottom{
 	position: absolute;
 	bottom: 10px;

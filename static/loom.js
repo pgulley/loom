@@ -14,13 +14,16 @@ function get_shortname(uname){
 	return uname.split(" ").map(function(i){return i[0]}).slice(0,2).join(" ").toUpperCase()
 }
 
+
+/// 
 var loom = {
 	story_id: document.URL.split("/").last().split("?")[0],
 	client_id : makeid(10),
 	client_obj: null,
 	current_passage : null,
 	clients_at_current_passage : [],
-	loaded: false
+	loaded: false,
+	jitsi_api: null
 }
 
 var color_picker = null
@@ -47,6 +50,10 @@ socket.on("client_connect_ok", function(user_doc){
 
 $(document).on(":passagestart",function(ev){
 	loom.current_passage = ev.content.id
+	if(loom.loaded){
+		setup_jitsi()
+	}
+
 	var timestamp = Date.now()
 	var event_log = {
 		"story_id": loom.story_id, 
@@ -149,6 +156,7 @@ function setup_loom_ui(){
 				  </div>
 				</div>
 			</div>
+			<div id="jitsi_box"> </div>
 			<div class="loom_ui_bottom"> 
 				<div class="other_clients">  </div>
 			</div>`
@@ -173,6 +181,7 @@ function setup_loom_ui(){
 	color_picker.on("input:end", function(color){
 		update_color(color.hexString)
 	})
+
 	$('#user_modal').modal()
 	update_other_clients()
 }
@@ -207,5 +216,20 @@ function update_color(color){
 		loom.client_obj.color = color
 		socket.emit("update_client", {"story_id":loom.story_id, "client":loom.client_obj})
 	}
+}
+
+
+function setup_jitsi(){
+	$("#jitsi_box").empty()
+	delete loom.jitsi_api
+	loom.jitsi_api = new JitsiMeetExternalAPI(
+		"meet.jit.si", 
+		{
+			roomName:`loom_${loom.current_passage}`, 
+			parentNode:$("#jitsi_box")[0],
+			height:"50%",
+			configOverwrite: { startWithAudioMuted: true },
+		}
+	)
 }
 
