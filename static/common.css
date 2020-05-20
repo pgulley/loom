@@ -5,7 +5,9 @@
 
 body{
 	font-family:Chapaza;
+	background-image:linear-gradient(white, #49455375);
 }
+
 
 h1{
 	border-bottom:2px solid black;

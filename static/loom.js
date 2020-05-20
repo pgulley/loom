@@ -14,6 +14,11 @@ function get_shortname(uname){
 	return uname.split(" ").map(function(i){return i[0]}).slice(0,2).join(" ").toUpperCase()
 }
 
+//This is toggled from the server
+var default_passage_settings = {
+	"enableJitsi":false
+}
+
 
 /// 
 var loom = {
@@ -50,7 +55,11 @@ socket.on("client_connect_ok", function(user_doc){
 
 $(document).on(":passagestart",function(ev){
 	loom.current_passage = ev.content.id
-	if(loom.loaded){
+	var passage_settings = process_passage_comments(ev.passage.text)
+	console.log(passage_settings)
+	$("#jitsi_box").empty()
+	teardown_jitsi()
+	if(loom.loaded && passage_settings["enableJitsi"]){
 		setup_jitsi()
 	}
 
@@ -101,7 +110,7 @@ function get_current_client_ui(){
 	else{
 		var color = loom.client_obj.color
 	}
-	return `<div class="loom_client you" style="background-color:${color};"> 
+	return `<div class="loom_client you attention" style="background-color:${color};"> 
 				<span id="client_shortname"> ${get_shortname(loom.client_obj.username)} </span>
 				<div class='loom_client_detail'> 
 					<span id="client_uname">${loom.client_obj.username}</span>  </br>
@@ -133,6 +142,8 @@ function update_other_clients(){
 //setup loom ui. Called once per document
 function setup_loom_ui(){
 	var loom_ui = `
+			<div id="jitsi_box"> </div>
+
 			<div class="loom_ui_top">
 				<div class="current_client"> ${get_current_client_ui()} </div>
 				<div class="modal" id="user_modal" tabindex="-1" role="dialog">
@@ -155,7 +166,7 @@ function setup_loom_ui(){
 				  </div>
 				</div>
 			</div>
-			<div id="jitsi_box"> </div>
+			
 			<div class="loom_ui_bottom"> 
 				<div class="other_clients">  </div>
 			</div>`
@@ -180,8 +191,17 @@ function setup_loom_ui(){
 	color_picker.on("input:end", function(color){
 		update_color(color.hexString)
 	})
-	setup_jitsi()
-	$('#user_modal').modal()
+	
+	var passage = SugarCube.Story.get(SugarCube.State.passage).text
+	console.log(passage)
+	var passage_settings = process_passage_comments(passage)
+	console.log(passage_settings)
+	if(passage_settings["enableJitsi"]){
+		setup_jitsi()
+	}
+
+
+	$('#user_modal').modal({"show":false})
 	update_other_clients()
 }
 
@@ -200,6 +220,7 @@ $(document).on("mouseout", ".loom_client_detail", function(){
 })
 
 $(document).on("click",".edit_client_button", function(){
+	$(".you").removeClass("attention")
 	$("#user_modal").modal("show")
 })
 
@@ -217,21 +238,50 @@ function update_color(color){
 	}
 }
 
-
-function setup_jitsi(){
+function teardown_jitsi(){
 	$("#jitsi_box").empty()
 	if(loom.jitsi_api){
 		loom.jitsi_api.dispose()
 	}
-	
+}
+
+function setup_jitsi(){
 	loom.jitsi_api = new JitsiMeetExternalAPI(
 		"meet.jit.si", 
 		{
 			roomName:`loom_${loom.current_passage}`, 
 			parentNode:$("#jitsi_box")[0],
-			height:"50%",
-			configOverwrite: { startWithAudioMuted: true },
+			height:"60%",
+			configOverwrite: { 
+				startWithAudioMuted: true 
+			},
+			interfaceConfigOverwrite:{
+				SHOW_JITSI_WATERMARK: false,
+				SHOW_WATERMARK_FOR_GUESTS:false,
+				DEFAULT_REMOTE_DISPLAY_NAME: "Fellow Warper",
+				DISPLAY_WELCOME_CONTENT:false,
+				DISPLAY_WELCOME_PAGE_TOOLBAR_ADDITIONAL_CONTENT:false,
+				TOOLBAR_BUTTONS: [
+			        'microphone', 'camera', 'closedcaptions', 'desktop', 
+			        'fodeviceselection', 'info', 'chat', 'recording',
+			        'etherpad', 'settings', 'raisehand',
+			        'videoquality', 'filmstrip', 
+			        'tileview',  'help', 'mute-everyone',
+			       
+			    ],
+			}
 		}
 	)
+}
+
+function process_passage_comments(text){
+	var comment_re = /\/\*([^*]+)\*\//
+	var parsed = comment_re.exec(text)
+	if(parsed != null){
+		console.log(parsed[1])
+		return JSON5.parse(parsed[1])
+	}else{
+		return default_passage_settings
+	}
 }
 

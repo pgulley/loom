@@ -59,7 +59,7 @@ def get_loomed_twine(story):
     bootjs_inject = "<script type='text/javascript' src='/static/bootstrap.bundle.min.js'></script>"
     bootcss_inject = "<link rel='stylesheet' type='text/css' href='/static/bootstrap.min.css'>"
     jitsi_inject = "<script src='https://meet.jit.si/external_api.js'></script>"
-        
+    json5_inject = "<script src='https://unpkg.com/json5@^2.0.0/dist/index.min.js'></script>"
     
     loomed = twine.replace("{LOOM_JS}", loom_js)
     loomed = loomed.replace("{LOOM_CSS}", loom_css)
@@ -67,6 +67,7 @@ def get_loomed_twine(story):
     loomed = socket_inject+loomed
     loomed = iro_inject+loomed
     loomed = jitsi_inject+loomed
+    loomed = json5_inject+loomed
     loomed = loomed+bootjs_inject #puts bootstrap at the bottom of the file, so it loads after the twine native jquery
 
     return loomed
@@ -264,7 +265,8 @@ def create_new_twine(create_event):
                 "story_id":story_id,
                 "title":twine_structure["title"], 
                 "auth_scheme":create_event["auth_scheme"], 
-                "raw":twine_raw}
+                "raw":twine_raw,
+                "jitsi":False}
         root_db.add_story(story_doc)
 
         ##add one new story_db interface to memory
@@ -566,7 +568,7 @@ def setup():
             twine_structure = process_twine.process_file("twines/{}.html", story_id)
             with open("twines/{}.html".format(story_id), "r") as twine_file:
                 twine_raw = twine_file.read()
-            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none", "raw":twine_raw}
+            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none", "raw":twine_raw, "jitsi":False}
             root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)

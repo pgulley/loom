@@ -1,6 +1,20 @@
+@keyframes shadow-pulse
+{
+     0% {
+          box-shadow: 0 0 0 0px rgba(255, 255, 255, 1);
+     }
+     100% {
+          box-shadow: 0 0 0 35px rgba(1, 1, 1, 0);
+     }
+}
+
 #story{
-	height: 40%;
-	overflow:auto;
+	height:30%;
+	resize:vertical;
+	overflow:scroll;
+	margin-bottom:0px;
+	margin-right:0px;
+	padding-bottom:10px;
 }
 
 .loom_ui_bottom{
@@ -49,6 +63,10 @@
 .current_client .loom_client{
 	border:5px solid white;
 	font-size:16px;
+}
+
+.attention{
+	animation: shadow-pulse 1s 10
 }
 
 .loom_client_detail{
