@@ -133,7 +133,6 @@ function update_other_clients(){
 //setup loom ui. Called once per document
 function setup_loom_ui(){
 	var loom_ui = `
-
 			<div class="loom_ui_top">
 				<div class="current_client"> ${get_current_client_ui()} </div>
 				<div class="modal" id="user_modal" tabindex="-1" role="dialog">
@@ -181,7 +180,7 @@ function setup_loom_ui(){
 	color_picker.on("input:end", function(color){
 		update_color(color.hexString)
 	})
-
+	setup_jitsi()
 	$('#user_modal').modal()
 	update_other_clients()
 }
@@ -221,7 +220,10 @@ function update_color(color){
 
 function setup_jitsi(){
 	$("#jitsi_box").empty()
-	delete loom.jitsi_api
+	if(loom.jitsi_api){
+		loom.jitsi_api.dispose()
+	}
+	
 	loom.jitsi_api = new JitsiMeetExternalAPI(
 		"meet.jit.si", 
 		{
