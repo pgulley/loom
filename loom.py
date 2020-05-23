@@ -266,7 +266,7 @@ def create_new_twine(create_event):
                 "title":twine_structure["title"], 
                 "auth_scheme":create_event["auth_scheme"], 
                 "raw":twine_raw,
-                "jitsi":False}
+                "jitsi_default":"default_off"}
         root_db.add_story(story_doc)
 
         ##add one new story_db interface to memory
@@ -532,6 +532,28 @@ def get_codes(story_id):
     all_story_codes = root_db.get_story_codes(story_id)
     emit("invite_codes", all_story_codes)
 
+def update_twine_text(update_event):
+    story_id = update_event["story_id"]
+    twine_raw = update_event["twine_raw"]
+    
+    ###SAINITY CHECK PLS
+    twine_checks = process_twine.validate_raw(twine_raw)
+    all_story_ids = [s["story_id"] for s in root_db.get_all_stories()]
+
+    #if any of the validations flag are false, we cannot accept this item /karen/ 
+    flags = [k for k, v in twine_checks.items() if not v]
+    if len(flags) > 0:
+        emit("update_twine_text_response", {"message":flags, "status":"FAILED"})
+    else:
+        story = root_db.get_story(story_id)
+        story["raw"] = twine_raw
+        root_db.update_story(story)
+        emit("update_twine_text_response", {"message":"Success", "status":"OK"})
+
+def delete_story(story_id):
+    #grab it and delete it
+    pass
+
 ##user story toggle
 all_socket_handlers = {
     "confirm_connected": connect_socket,
@@ -544,7 +566,8 @@ all_socket_handlers = {
     "client_admin_toggle":client_admin_toggle,
     "client_added_toggle":client_added_toggle,
     "generate_codes":generate_codes,
-    "get_codes":get_codes
+    "get_codes":get_codes,
+    "update_twine_text":update_twine_text
 }
 
 ##############
@@ -568,7 +591,7 @@ def setup():
             twine_structure = process_twine.process_file("twines/{}.html", story_id)
             with open("twines/{}.html".format(story_id), "r") as twine_file:
                 twine_raw = twine_file.read()
-            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none", "raw":twine_raw, "jitsi":False}
+            story_doc = {"story_id":twine_structure["story_id"],"title":twine_structure["title"], "auth_scheme":"none", "raw":twine_raw, "jitsi_default":"default_off"}
             root_db.add_story(story_doc)
             for passage in twine_structure["passages"]:
                 story_dbs[story_id].add_passage(passage)

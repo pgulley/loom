@@ -27,19 +27,34 @@
 	</div>
 	<div class="admin_ui_unit">
 		<h3> Settings </h3>
-		<div class="passages_settings"> 
-			Authorization Scheme </br>
-				<div id="auth_scheme_input">
-					<input type="radio" id="auth_none" name="auth" value="auth_none">
-					<label for="auth_none"> None</label><br>
-					<input type="radio" id="auth_login" name="auth" value="auth_login">
-					<label for="auth_login">Login Required</label><br>
-					<input type="radio" id="auth_invite" name="auth" value="auth">
-					<label for="auth_invite">Invite Only</label>
-				</div> 
+		<div class="passages_settings"> 	
+			<h4> Update Twine Text </h4>
+			<input type='file' accept=".html" id="upload_new_twine">
+			<div id="new_twine_errors">
+			</div>
+			<button id="submit_new_twine" disabled>Upload</button> 
+			
+			<h4> Authorization Scheme </h4>
+			<div id="auth_scheme_input">
+				<input type="radio" id="auth_none" name="auth" value="auth_none">
+				<label for="auth_none"> None</label><br>
+				<input type="radio" id="auth_login" name="auth" value="auth_login">
+				<label for="auth_login">Login Required</label><br>
+				<input type="radio" id="auth_invite" name="auth" value="auth">
+				<label for="auth_invite">Invite Only</label>
+			</div> 
+
+			<h4> Jitsi Default </h4>
+			<div id="jitsi_default">
+				<input type="radio" id="jitsi_default_off" name="jitsi_default" value="default_off">
+				<label for="auth_none"> Default Off </label><br>
+				<input type="radio" id="jitsi_default_on" name="jitsi_default" value="default_on">
+				<label for="auth_login"> Default On </label><br>
 			</div>
 		</div>
+
 	</div>
+
 	<div class="admin_ui_unit">
 		<h3> Users </h3>
 		

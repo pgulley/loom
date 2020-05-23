@@ -203,6 +203,7 @@ socket.on("story_structure", function(response){
 		setup_passage_table()
 		setup_passage_graph()
 		$(`#auth_${loom_admin.story_doc["auth_scheme"]}`).prop("checked", true)
+		$(`#jitsi_${loom_admin.story_doc["jitsi_default"]}`).prop("checked", true)
 		socket.emit("get_admin_clients", loom_admin.story_id)
 	}
 
@@ -233,6 +234,18 @@ socket.on("invite_codes", function(codes){
 	render_codes_list(codes)
 })
 
+socket.on("update_twine_text_response", function(resp){
+	console.log(resp)
+	if(resp["status"] == "OK"){
+		$("#new_twine_errors")[0].innerHTML = "Success!"
+		window.location.reload()
+	}
+	else{
+		$("#new_twine_errors")[0].innerHTML = resp["message"].map(function(er){return `<li> ${er} </li>`}).join("")
+	}
+	
+})
+
 $(document).on("change", "#auth_scheme_input", function(){
 	loom_admin.story_doc.auth_scheme = $("#auth_scheme_input input:checked")[0].id.split("_")[1]
 	socket.emit("update_story", loom_admin.story_doc)
@@ -248,4 +261,34 @@ $(document).on("change", ".added_toggle", function(){
 
 $(document).on("click", "#create_codes", function(){
 	socket.emit("generate_codes", {story_id:loom_admin.story_id, number:$("#invite_num").val()})
+})
+
+$(document).on("change", "#jitsi_default", function(){
+	val = $("#jitsi_default input:checked")[0].value
+	loom_admin.story_doc.jitsi_default = val
+	console.log(loom_admin.story_doc)
+	socket.emit("update_story", loom_admin.story_doc)
+})
+
+$(document).on("change", "#upload_new_twine", function(){
+	console.log($("#upload_new_twine").prop("files"))
+	if($("#upload_new_twine").prop("files").length==1){
+		$("#submit_new_twine").removeAttr("disabled")
+	}
+	else{
+		$("#submit_new_twine").attr("disabled", true)
+	}
+})
+
+$(document).on("click", "#submit_new_twine", function(){
+	console.log("Click")
+	var fr = new FileReader
+	fr.onload = function(e){
+		var auth_scheme = $("#auth_scheme_input input:checked")[0].id.split("_")[1]
+		var raw_twine = e.target.result
+		socket.emit("update_twine_text", {"story_id": story_id, "twine_raw":raw_twine})
+	}
+	var twine_file = $("#upload_new_twine").prop("files")[0]
+	var story_id = twine_file.name.split(".")[0]
+	fr.readAsText(twine_file)
 })

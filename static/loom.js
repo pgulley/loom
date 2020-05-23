@@ -26,6 +26,7 @@ var loom = {
 	client_id : makeid(10),
 	client_obj: null,
 	current_passage : null,
+	current_passage_settings: null,
 	clients_at_current_passage : [],
 	loaded: false,
 	jitsi_api: null
@@ -55,11 +56,11 @@ socket.on("client_connect_ok", function(user_doc){
 
 $(document).on(":passagestart",function(ev){
 	loom.current_passage = ev.content.id
-	var passage_settings = process_passage_comments(ev.passage.text)
-	console.log(passage_settings)
+	loom.current_passage_settings =  process_passage_comments(ev.passage.text)
+
 	$("#jitsi_box").empty()
 	teardown_jitsi()
-	if(loom.loaded && passage_settings["enableJitsi"]){
+	if(loom.loaded && loom.current_passage_settings["enableJitsi"]){
 		setup_jitsi()
 	}
 
@@ -193,10 +194,8 @@ function setup_loom_ui(){
 	})
 	
 	var passage = SugarCube.Story.get(SugarCube.State.passage).text
-	console.log(passage)
-	var passage_settings = process_passage_comments(passage)
-	console.log(passage_settings)
-	if(passage_settings["enableJitsi"]){
+	loom.current_passage_settings = process_passage_comments(passage)
+	if(loom.current_passage_settings["enableJitsi"]){
 		setup_jitsi()
 	}
 
@@ -249,11 +248,12 @@ function setup_jitsi(){
 	loom.jitsi_api = new JitsiMeetExternalAPI(
 		"meet.jit.si", 
 		{
-			roomName:`loom_${loom.current_passage}`, 
+			roomName:(loom.current_passage_settings["jitsiRoomName"]==undefined?`loom_${loom.current_passage}`:loom.current_passage_settings["jitsiRoomName"] ), 
 			parentNode:$("#jitsi_box")[0],
 			height:"60%",
 			configOverwrite: { 
-				startWithAudioMuted: true 
+				startWithAudioMuted: true ,
+				prejoinPageEnabled: (loom.current_passage_settings["prejoin"]==true ? true : false),
 			},
 			interfaceConfigOverwrite:{
 				SHOW_JITSI_WATERMARK: false,

@@ -92,6 +92,7 @@ $(document).on("change", "#upload_new_twine", function(){
 		$("#submit_new_twine").attr("disabled", true)
 	}
 })
+
 $(document).on("click", "#submit_new_twine", function(){
 	console.log("Click")
 	var fr = new FileReader
@@ -103,5 +104,4 @@ $(document).on("click", "#submit_new_twine", function(){
 	var twine_file = $("#upload_new_twine").prop("files")[0]
 	var story_id = twine_file.name.split(".")[0]
 	fr.readAsText(twine_file)
-	
 })
