@@ -133,7 +133,7 @@ function setup_users_table(user_list){
 				${(user.story_admin ? "checked":"")} 
 				${(user.username==loom_admin.logged_in_user ? "disabled" :"")}
 				${(user.loom_admin ? "checked disabled" :"")} 
-				${(user.add_to_story ? "" : "disabled")}>
+				>
 			</td>
 		</tr>
 		`
