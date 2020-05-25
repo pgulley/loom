@@ -248,7 +248,7 @@ function setup_jitsi(){
 	loom.jitsi_api = new JitsiMeetExternalAPI(
 		"meet.jit.si", 
 		{
-			roomName:(loom.current_passage_settings["jitsiRoomName"]==undefined?`loom_${loom.current_passage}`:loom.current_passage_settings["jitsiRoomName"] ), 
+			roomName:(loom.current_passage_settings["jitsiRoomName"]==null?`loom_${loom.current_passage}`:loom.current_passage_settings["jitsiRoomName"] ), 
 			parentNode:$("#jitsi_box")[0],
 			height:"60%",
 			configOverwrite: { 
