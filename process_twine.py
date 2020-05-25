@@ -38,7 +38,7 @@ def process_file(location_format, twine_loc):
 	#We need the twine engine for each link for anything on the browser to work. 
 	title_id_map = {p["title"]:p["passage_id"] for p in passages}
 	for passage in passages:
-		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "https" not in link_title]
+		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "http" not in link_title]
 	return {"story_id":twine_loc, "title":story_title, "passages":passages}
 
 
@@ -47,11 +47,11 @@ def process_raw(twine_raw):
 	story_title = soup.find("title").text
 	passages_raw = soup.findAll("tw-passagedata")
 	passages = [process_passage(p) for p in passages_raw]
-	
 	#We need the twine engine id for each link for anything on the browser to work. 
 	title_id_map = {p["title"]:p["passage_id"] for p in passages}
+
 	for passage in passages:
-		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "https" not in link_title]
+		passage["link_ids"] = [title_id_map[link_title] for link_title in passage["link_titles"] if "http" not in link_title]
 	return {"title":story_title, "passages":passages}
 
 #to check new uploaded raw stories
