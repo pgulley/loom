@@ -12,3 +12,16 @@
 .container{
 	height:100%;
 }
+
+.box_content{
+	margin:auto;
+	margin-bottom:10px;
+}
+
+img{
+	vertical-align: inherit !important;
+}
+
+.nav-item{
+	border-radius: 0px
+}
