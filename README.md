@@ -12,20 +12,20 @@ covid-inspired telepresence weirdness
 It' a simple python server which injects a socket.io client into a twine story. 
 The only requirement placed upon the twine story is that it is written in the SugarCube engine. 
 The only modification needed is to add a tag: `{LOOM_JS}` to the user javascript of a twine story and `{LOOM_CSS}` to the user stylesheet.
-Name the file anything unique and plop that bad boy into the 'twines/' folder and you're golden. 
+If you are logged in with admin permissions, you will be able to upload your story to the server on the landing page. 
 
 
 ### How to run
 
-Right now there is only a development server- it's packaged as a default python package, so 
-slap this thing in a virtual environment and run `python loom.py` and you're golden. 
+The devlopment server is run via `gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 loom:app`
+Make sure you have `ADMIN_PASS`, `MONGODB_URI` and `SOCKET_SECRET` defined in your environment.
+Make sure you have a mongodb instance available.
 
-As of recently, we're using mongodb for database stuff. 
-I may switch this over eventually for easier deployments by hobbyists, but for now it solves a lot of concurrency issues to use mongo.
-All this to say, make sure you have a mongodb instance running or it won't work. 
+`python reset_db.py` reverts the database to its empty state. 
 
 ### It's Deployed!
-Find a live version [here](https://twine-loom-test.herokuapp.com/twine/twine) if you please. 
+Find a live version [here](https://twine-loom-test.herokuapp.com) if you please. 
+[Looming](https://twine-loom-test.herokuapp.com/twine/looming) is a short story showcasing some of the capabilities of the platform
 
 ### Development Status
 
@@ -44,6 +44,7 @@ Find a live version [here](https://twine-loom-test.herokuapp.com/twine/twine) if
 - [X] Client-defined names and icons
 - [X] flexible configuration and deployment options 
 - [X] choose a better wsgi solution for non-dev deployments: using eventlet
+- [X] Web Interface to load new stories
 
 MVP is done and deployed!
 
@@ -59,24 +60,25 @@ MVP is done and deployed!
 				- [X] associate clients with users
 			- [X] Invitation scheme
 
+ - [ ] POLISH TIL IT SHINES
+
+#### Down the road features
+
 - [ ] Chat features
 	- [X] None Scheme 
+	- [ ] Jitsi Scheme
 	- [ ] Echo Scheme
 	- [ ] Tweet Scheme
 
-- [ ] UI
-	- [ ] Admin reskin
-	- [ ] fontz?
+- [ ] More Elaborate Sugarcube Engine Interaction
+	- [ ] Share Story Variables with Server
+		- [ ] Mark editable/sharable/viewable etc 
 
-#### Down the road options
+- [ ] More Admin interaction options 
+	- [ ] Boot User
+	- [ ] @ User
+	- [ ] Edit Story Variables
 
-- [X] Web Interface to load new stories
-- [ ] Client to client chatting
-- [ ] More Admin interaction options
-- [ ] More Sugarcube Engine interactions (variables etc)
-- [ ] Extended API- ifttt? 
-
-#### 
-- [X] Certain UI Elements are unresponsive in chrome
+- [ ] Extended API- ifttt or RSS?
 
 
