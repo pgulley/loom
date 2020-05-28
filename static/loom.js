@@ -238,6 +238,7 @@ function update_color(color){
 }
 
 function teardown_jitsi(){
+	$("#story").removeClass("jitsi_on")
 	$("#jitsi_box").empty()
 	if(loom.jitsi_api){
 		loom.jitsi_api.dispose()
@@ -245,6 +246,7 @@ function teardown_jitsi(){
 }
 
 function setup_jitsi(){
+	$("#story").addClass("jitsi_on")
 	loom.jitsi_api = new JitsiMeetExternalAPI(
 		"meet.jit.si", 
 		{

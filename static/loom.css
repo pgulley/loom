@@ -9,12 +9,15 @@
 }
 
 #story{
-	height:30%;
-	resize:vertical;
-	overflow:scroll;
 	margin-bottom:0px;
 	margin-right:0px;
 	padding-bottom:10px;
+}
+
+.jitsi_on{
+	height:30%;
+	resize:vertical;
+	overflow:scroll;
 }
 
 .loom_ui_bottom{
